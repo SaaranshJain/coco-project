@@ -14,7 +14,8 @@ TwinBuffer createTwinBuffer(FILE *fp) {
     return tb;
 }
 
-FILE *getStream(FILE *fp) {
+TwinBuffer getStream(FILE *fp) {
+    // to be implemented
     static TwinBuffer tb = NULL;
     
     if (tb == NULL) {
@@ -32,7 +33,8 @@ FILE *getStream(FILE *fp) {
             return NULL;
         }
     }
-    return tb->fp;
+    // return tb->fp;
+    return tb;
 }
 
 TokenInfo getNextToken(TwinBuffer B) {
