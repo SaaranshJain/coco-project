@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
         printf("Usage: %s <testcase file> <clean file>\n", argv[0]);
         return 1;
     }
-    printf("Implementation status: Unimplemented\n");
+    printf("Implementation status: Comment cleaning implemented\n");
     printf("------------------------------------\n");
     while(1){
         printf("Choose an option:\n");
@@ -23,8 +23,25 @@ int main(int argc, char *argv[]) {
             case 0:
                 return 0;
             case 1:
-                printf("Deleting Comments:\n");
-                // removeComments(argv[1], argv[2]);
+                printf("Code after deleting comments:\n");
+                printf("-----------------------------\n");
+                removeComments(argv[1], argv[2]);
+                // Efficiently read the clean file and print it
+                FILE *cleanFile = fopen(argv[2], "r");
+                if(cleanFile == NULL){
+                    printf("Error opening clean file\n");
+                    return 1;
+                }
+                // Read the clean file line by line
+                char *line = NULL;
+                size_t len = 0;
+                ssize_t read;
+                while ((read = getline(&line, &len, cleanFile)) != -1) {
+                    printf("%s", line);
+                }
+                fclose(cleanFile);
+                printf("--------------------------------\n");
+                printf("Clean file generated\n");
                 break;
             case 2:
                 printf("Printing Tokens:\n");

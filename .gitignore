@@ -1,4 +1,10 @@
-*.out
-*.o
 .vscode
+
+# Build files
+driver
+*exe
+*.o
+*.out
+
+# MacOS
 .DS_Store
