@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
+    - name: Check GCC version
+      run: gcc-11 --version
     - name: make
-      run: make compiler CC=/usr/bin/gcc-11.4.0
+      run: make compiler CC=gcc-11
     - uses: actions/upload-artifact@v4
       with:
         name: compiler-build
