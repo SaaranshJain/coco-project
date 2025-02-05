@@ -1,0 +1,21 @@
+name: C/C++ Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: make
+      run: make compiler CC=gcc-11.4
+    - uses: actions/upload-artifact@v4
+      with:
+        name: compiler-build
+        path: ./compiler
+        if-no-files-found: error
+        overwrite: true
