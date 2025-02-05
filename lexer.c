@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sys/types.h>
+#include <string.h>
 #include "lexer.h"
 #include "lexerDef.h"
 
@@ -28,10 +29,17 @@ void removeComments(char *testcaseFile, char *cleanFile) {
     size_t len = 0;
     ssize_t read;
     while ((read = getline(&line, &len, inputFile)) != -1) {
-        if(line[0] == '%') {
-            continue;
+        char *commentStart = strchr(line, '%');
+        if (commentStart != NULL) {
+            *commentStart = '\0'; // Terminate the line at the start of the comment
         }
-        fprintf(outputFile, "%s", line);
+        if (line[0] == '\0') continue;
+        // Remove trailing newline character if present
+        size_t lineLength = strlen(line);
+        if (lineLength > 0 && line[lineLength - 1] == '\n') {
+            line[lineLength - 1] = '\0';
+        }
+        fprintf(outputFile, "%s\n", line);
     }
     fclose(inputFile);
     fclose(outputFile);
