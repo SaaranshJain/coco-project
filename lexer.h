@@ -4,7 +4,7 @@
 #include "lexerDef.h"
 
 FILE *getStream(FILE *fp);
-tokenInfo getNextToken(twinBuffer B);
+tokenInfo getNextToken(TwinBuffer B); 
 void removeComments(char *testcaseFile, char *cleanFile);
 
 #endif
