@@ -72,12 +72,21 @@ typedef struct
     int lexemeLength;
 } tokenInfo;
 
-typedef struct
-{
+// typedef struct
+// {
+//     char buffer1[BUFFER_SIZE];
+//     char buffer2[BUFFER_SIZE];
+//     bool secondBuffer;
+//     int pointer;
+// } twinBuffer;
+
+typedef struct {
     char buffer1[BUFFER_SIZE];
     char buffer2[BUFFER_SIZE];
-    bool secondBuffer;
-    int pointer;
-} twinBuffer;
+    char *currentBuffer;
+    int currentPos;
+    int bufferSize;
+    FILE *fp;
+} TwinBuffer;
 
 #endif
