@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #define BUFFER_SIZE 2048
 
-typedef enum
+enum TOKEN_TYPE
 {
     TK_ASSIGNOP,
     TK_COMMENT,
@@ -63,14 +63,16 @@ typedef enum
     TK_GT,
     TK_GE,
     TK_NE
-} TOKEN_TYPE;
+};
 
-typedef struct
+struct tokenInfo
 {
-    TOKEN_TYPE token;
+    enum TOKEN_TYPE token;
     char *lexeme;
     int lexemeLength;
-} tokenInfo;
+};
+
+typedef struct tokenInfo *TokenInfo;
 
 // typedef struct
 // {
@@ -80,13 +82,16 @@ typedef struct
 //     int pointer;
 // } twinBuffer;
 
-typedef struct {
+struct twinBuffer
+{
     char buffer1[BUFFER_SIZE];
     char buffer2[BUFFER_SIZE];
     char *currentBuffer;
     int currentPos;
     int bufferSize;
     FILE *fp;
-} TwinBuffer;
+};
+
+typedef struct twinBuffer *TwinBuffer;
 
 #endif
