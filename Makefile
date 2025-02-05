@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11
 TARGET = compiler
-SRCS = driver.c lexer.c parser.c
+SRCS = driver.c lexer.c
 
 all: $(TARGET)
 
