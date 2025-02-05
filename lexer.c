@@ -4,11 +4,38 @@
 #include "lexer.h"
 #include "lexerDef.h"
 
-FILE *getStream(FILE *fp) {
-    // to be implemented
+TwinBuffer* createTwinBuffer(FILE *fp) {
+    TwinBuffer *tb = (TwinBuffer*)malloc(sizeof(TwinBuffer));
+    tb->currentBuffer = tb->buffer1;
+    tb->currentPos = 0;
+    tb->bufferSize = 0;
+    tb->fp = fp;
+    return tb;
 }
 
-tokenInfo getNextToken(twinBuffer B) {
+FILE *getStream(FILE *fp) {
+    // to be implemented
+    static TwinBuffer *tb = NULL;
+    
+    if (tb == NULL) {
+        tb = createTwinBuffer(fp);
+    }
+    
+    if (tb->currentPos >= tb->bufferSize) {
+        // Switch buffers
+        tb->currentBuffer = (tb->currentBuffer == tb->buffer1) ? tb->buffer2 : tb->buffer1;
+        tb->bufferSize = fread(tb->currentBuffer, 1, BUFFER_SIZE, tb->fp);
+        tb->currentPos = 0;
+        
+        if (tb->bufferSize == 0) {
+            // End of file reached
+            return NULL;
+        }
+    }
+    return tb->fp;
+}
+
+tokenInfo getNextToken(TwinBuffer B) {
     
 }
 
