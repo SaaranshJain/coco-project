@@ -1,0 +1,1 @@
+void removeComments(char *testcaseFile, char *cleanFile);
