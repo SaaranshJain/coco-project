@@ -1,7 +1,7 @@
 .vscode
 
 # Build files
-driver
+compiler
 *exe
 *.o
 *.out
