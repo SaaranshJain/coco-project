@@ -45,7 +45,7 @@ TokenInfo getNextToken(TwinBuffer B) {
     int current_lexeme_length = 0;
 
     while (1) {
-        currentChar = B->currentBuffer[B->currentPos++];
+        currentChar = B->currentBuffer[B->currentPos];
 
         switch (state)
         {
@@ -81,9 +81,9 @@ TokenInfo getNextToken(TwinBuffer B) {
                 state = 22;
             } else if (currentChar == '\n') {
                 state = 23;
-            } else if (currentChar >= 98 && currentChar <= 100) {
+            } else if (currentChar >= 'b' && currentChar <= 'd') {
                 state = 24;
-            } else if (currentChar == 97 || (currentChar >= 101 && currentChar <= 122)) {
+            } else if (currentChar == 'a' || (currentChar >= 'e' && currentChar <= 'z')) {
                 state = 25;
             } else if (currentChar >= '0' && currentChar <= '9') {
                 state = 26;
@@ -131,11 +131,165 @@ TokenInfo getNextToken(TwinBuffer B) {
 
         case 10: // ; state
             token_to_return->token = TK_SEM;
-            return token_to_return; 
+            return token_to_return;
+
+        case 11: // [
+            token_to_return->token = TK_SQL;
+            return token_to_return;
+
+        case 12: // ]
+            token_to_return->token = TK_SQR;
+            return token_to_return;
+
+        case 13: // ~
+            token_to_return->token = TK_NOT;
+            return token_to_return;
+
+        case 14: // &
+            if (currentChar == '&') {
+                state = 27;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 15: // @
+            if (currentChar == '@') {
+                state = 28;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 16: // =
+            if (currentChar == '=') {
+                state = 29;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 17: // !
+            if (currentChar == '=') {
+                state = 30;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 18: // <
+            if (currentChar == '=') {
+                state = 31;
+            } else if (currentChar == '-') {
+                state = 32;
+            } else {
+                state = 33;
+            }
+
+            break;
+
+        case 19: // >
+            if (currentChar == '=') {
+                state = 34;
+            } else {
+                state = 35;
+            }
+
+            break;
+
+        case 20: // _
+            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
+                state = 36;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 21: // #
+            if (currentChar >= 'a' && currentChar <= 'z') {
+                state = 37;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 22: // %
+            if (currentChar == '\n') {
+                state = 23;
+            } else {
+                state = 22;
+            }
+
+            break;
+
+        case 23: // \n
+            // increment line number
+            state = 0;
+            break;
+
+        case 24: // [b-d]
+            if (currentChar >= 'a' && currentChar <= 'z') {
+                state = 38;
+            } else if (currentChar >= '2' && currentChar <= '7') {
+                state = 39;
+            } else {
+                state = 40;
+            }
+
+            break;
+
+        case 25: // [a|e-z]
+            if (currentChar >= 'a' && currentChar <= 'z') {
+                state = 25;
+            } else {
+                state = 40;
+            }
+
+            break;
+
+        case 26: // [0-9]
+            if (currentChar >= '0' && currentChar <= '9') {
+                state = 26;
+            } else if (currentChar == '.') {
+                state = 41;
+            } else {
+                state = 42;
+            }
+
+            break;
+
+        case 27: // &&
+            if (currentChar == '&') {
+                state = 43;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 28: // @@
+            if (currentChar == '@') {
+                state = 44;
+            } else {
+                // ERROR
+            }
+
+            break;
+
+        case 29: // ==
+            
         
         default:
             break;
         }
+    
+        ++(B->currentPos);
     }
 
 }
