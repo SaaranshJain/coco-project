@@ -2,7 +2,7 @@
 #define LEXERDEF_H
 
 #include <stdbool.h>
-#define BUFFER_SIZE 2048
+#define TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE 2048
 
 enum TOKEN_TYPE
 {
@@ -84,8 +84,8 @@ typedef struct tokenInfo *TokenInfo;
 
 struct twinBuffer
 {
-    char buffer1[BUFFER_SIZE];
-    char buffer2[BUFFER_SIZE];
+    char buffer1[TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE];
+    char buffer2[TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE];
     char *currentBuffer;
     int currentPos;
     int bufferSize;
