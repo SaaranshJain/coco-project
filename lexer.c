@@ -1,8 +1,26 @@
 #include <stdio.h>
 #include <sys/types.h>
+#include <string.h>
 #include <stdlib.h>
 #include "lexer.h"
-#include "lexerDef.h"
+
+char* ENUM_NAME_FROM_VALUE[57] = {
+    "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID", "TK_ID",
+    "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID",
+    "TK_WITH", "TK_PARAMETERS", "TK_END", "TK_WHILE",
+    "TK_UNION", "TK_ENDUNION", "TK_DEFINETYPE", "TK_AS",
+    "TK_TYPE", "TK_MAIN", "TK_GLOBAL", "TK_PARAMETER",
+    "TK_LIST", "TK_SQL", "TK_SQR", "TK_INPUT",
+    "TK_OUTPUT", "TK_INT", "TK_REAL", "TK_COMMA",
+    "TK_SEM", "TK_COLON", "TK_DOT", "TK_ENDWHILE",
+    "TK_OP", "TK_CL", "TK_IF", "TK_THEN",
+    "TK_ENDIF", "TK_READ", "TK_WRITE", "TK_RETURN",
+    "TK_PLUS", "TK_MINUS", "TK_MUL", "TK_DIV",
+    "TK_CALL", "TK_RECORD", "TK_ENDRECORD", "TK_ELSE",
+    "TK_AND", "TK_OR", "TK_NOT", "TK_LT",
+    "TK_LE", "TK_EQ", "TK_GT", "TK_GE",
+    "TK_NE"
+};
 
 TwinBuffer getStream(FILE *fp) {
     TwinBuffer tb = (TwinBuffer) malloc(sizeof(struct twinBuffer));
@@ -10,6 +28,7 @@ TwinBuffer getStream(FILE *fp) {
     tb->currentPos = 0;
     tb->bufferSize = fread(tb->currentBuffer, 1, TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE, fp);
     tb->fp = fp;
+    tb->line = 1;
     return tb;
 }
 
@@ -22,485 +41,418 @@ bool refresh_buffer(TwinBuffer B) {
 }
 
 TokenInfo getNextToken(TwinBuffer B) {
-    int state = 0;
+    enum STATE state = START;
     char currentChar;
+    int end_flag = 2;
     
     int current_lexeme_cap = 32;
     TokenInfo token_to_return = malloc(sizeof(struct tokenInfo));
     token_to_return->lexeme = malloc(32 * sizeof(char));
+    memset(token_to_return->lexeme, '\0', 32);
     token_to_return->lexemeLength = 0;
 
-    while ((B->currentPos < B->bufferSize) || refresh_buffer(B)) { // use short circuit evaluation, as long as pos < size it will continue, if not it will refresh
+    while ((B->currentPos < B->bufferSize) || refresh_buffer(B) || end_flag) { // use short circuit evaluation, as long as pos < size it will continue, if not it will refresh
         if (token_to_return->lexemeLength >= current_lexeme_cap) {
             token_to_return->lexeme = realloc(token_to_return->lexeme, 2*current_lexeme_cap);
+            memset(token_to_return->lexeme + current_lexeme_cap, '\0', current_lexeme_cap);
             current_lexeme_cap = current_lexeme_cap + current_lexeme_cap;
         }
 
-        currentChar = B->currentBuffer[B->currentPos];
-        (token_to_return->lexeme)[(token_to_return->lexemeLength)++] = currentChar;
+        if ((B->currentPos >= B->bufferSize) && end_flag) {
+            --end_flag;
+            currentChar = -1;
+        } else {
+            currentChar = B->currentBuffer[(B->currentPos)++];
+            (token_to_return->lexeme)[(token_to_return->lexemeLength)++] = currentChar;
+        }
+
+        // printf("In state: %d, currentChar: %c\n", state, currentChar);
 
         switch (state)
         {
-        case 0: // START state
+        case START:
             if (currentChar == '\t' || currentChar == '\r' || currentChar == ' ') {
-                state = 0;
+                state = START;
+                token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
             } else if (currentChar >= 40 && currentChar <= 47) { // [40-47] are ['(', ')', '*', '+', ',', '-', '.', '/']
-                state = (int) (currentChar - (char) 39);
-            } else if (currentChar == ':' || currentChar == ';') {
-                state = (int) (currentChar - ':' + (char) 9);
+                int tokens[8] = { TK_OP, TK_CL, TK_MUL, TK_PLUS, TK_COMMA, TK_MINUS, TK_DOT, TK_DIV };
+                token_to_return->token = tokens[currentChar - 40]; 
+                return token_to_return;
+            } else if (currentChar == ':') {
+                token_to_return->token = TK_COLON;
+                return token_to_return;
+            } else if (currentChar == ';') {
+                token_to_return->token = TK_SEM;
+                return token_to_return;
             } else if (currentChar == '[') {
-                state = 11;
+                token_to_return->token = TK_SQL;
+                return token_to_return;
             } else if (currentChar == ']') {
-                state = 12;
+                token_to_return->token = TK_SQR;
+                return token_to_return;
             } else if (currentChar == '~') {
-                state = 13;
+                token_to_return->token = TK_NOT;
+                return token_to_return;
             } else if (currentChar == '&') {
-                state = 14;
+                state = FIRST_AND;
             } else if (currentChar == '@') {
-                state = 15;
+                state = FIRST_OR;
             } else if (currentChar == '=') {
-                state = 16;
-            } else if (currentChar >= 60 && currentChar <= 62) { // [60-61] are ['!', '<', '>']
-                state = (int) (currentChar - 43);
+                state = FIRST_EQ;
+            } else if (currentChar == '!') {
+                state = FIRST_NOT;
+            } else if (currentChar == '<') {
+                state = FIRST_LT;
+            } else if (currentChar == '>') {
+                state = FIRST_GT;
             } else if (currentChar == '_') {
-                state = 20;
+                state = UNDERSCORE;
             } else if (currentChar == '#') {
-                state = 21;
+                state = HASHTAG;
             } else if (currentChar == '%') {
-                state = 22;
+                state = PERCENT;
+                token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
             } else if (currentChar == '\n') {
-                state = 23;
+                ++(B->line);
+                state = START;
+                token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
             } else if (currentChar >= 'b' && currentChar <= 'd') {
-                state = 24;
+                state = FIRST_ID;
             } else if (currentChar == 'a' || (currentChar >= 'e' && currentChar <= 'z')) {
-                state = 25;
+                state = FIELD_ID;
             } else if (currentChar >= '0' && currentChar <= '9') {
-                state = 26;
+                state = FIRST_DIGIT;
             } else {
-                // ERROR
+                if (currentChar != -1) {
+                    fprintf(stderr, "Line %d\n\tUnexpected character: %c\n\n", B->line, currentChar);
+                }
+
+                state = START;
             }
 
             break;
 
-        case 1: // ( state
-            token_to_return->token = TK_OP;
-            return token_to_return;
-
-        case 2: // ) state
-            token_to_return->token = TK_CL;
-            return token_to_return;
-
-        case 3: // * state
-            token_to_return->token = TK_MUL;
-            return token_to_return;
-
-        case 4: // + state
-            token_to_return->token == TK_PLUS;
-            return token_to_return;
-
-        case 5: // , state
-            token_to_return->token = TK_COMMA;
-            return token_to_return;
-
-        case 6: // - state
-            token_to_return->token == TK_MINUS;
-            return token_to_return;
-        
-        case 7: // . state
-            token_to_return->token == TK_DOT;
-            return token_to_return;
-
-        case 8: // / state
-            token_to_return->token == TK_DIV;
-            return token_to_return;
-
-        case 9: // : state
-            token_to_return->token = TK_COLON;
-            return token_to_return;
-
-        case 10: // ; state
-            token_to_return->token = TK_SEM;
-            return token_to_return;
-
-        case 11: // [
-            token_to_return->token = TK_SQL;
-            return token_to_return;
-
-        case 12: // ]
-            token_to_return->token = TK_SQR;
-            return token_to_return;
-
-        case 13: // ~
-            token_to_return->token = TK_NOT;
-            return token_to_return;
-
-        case 14: // &
+        case FIRST_AND:
             if (currentChar == '&') {
-                state = 27;
+                state = SECOND_AND;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
+                state = SECOND_AND;
             }
 
             break;
 
-        case 15: // @
+        case FIRST_OR:
             if (currentChar == '@') {
-                state = 28;
+                state = SECOND_OR;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
+                state = SECOND_OR;
             }
 
             break;
 
-        case 16: // =
+        case FIRST_EQ:
             if (currentChar == '=') {
-                state = 29;
+                token_to_return->token = TK_EQ;
+                return token_to_return;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
             }
 
             break;
 
-        case 17: // !
+        case FIRST_NOT:
             if (currentChar == '=') {
-                state = 30;
+                token_to_return->token = TK_NE;
+                return token_to_return;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
             }
 
             break;
 
-        case 18: // <
+        case FIRST_LT:
             if (currentChar == '=') {
-                state = 31;
+                token_to_return->token = TK_LE;
+                return token_to_return;
             } else if (currentChar == '-') {
-                state = 32;
+                state = LT_MINUS;
             } else {
-                state = 33;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                token_to_return->token = TK_LT;
+                return token_to_return;
             }
 
             break;
 
-        case 19: // >
+        case FIRST_GT:
             if (currentChar == '=') {
-                state = 34;
+                token_to_return->token = TK_GE;
+                return token_to_return;
             } else {
-                state = 35;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                token_to_return->token = TK_GT;
+                return token_to_return;
             }
 
             break;
 
-        case 20: // _
+        case UNDERSCORE:
             if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
-                state = 36;
+                state = UNDERSCORE_LETTER;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: lowercase/uppercase alphabet, Received: '%c'\n", B->line, currentChar);
+                state = UNDERSCORE_LETTER;
             }
 
             break;
-
-        case 21: // #
+            
+        case HASHTAG:
             if (currentChar >= 'a' && currentChar <= 'z') {
-                state = 37;
+                state = HASHTAG_LETTER;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: lowercase alphabet, Received: '%c'\n", B->line, currentChar);
+                state = HASHTAG_LETTER;
             }
 
             break;
 
-        case 22: // %
+        case PERCENT:
             if (currentChar == '\n') {
-                state = 23;
+                ++(B->line);
+                state = START;
             } else {
-                state = 22;
+                state = PERCENT;
             }
 
+            token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
             break;
 
-        case 23: // \n
-            // increment line number
-            state = 0;
-            break;
-
-        case 24: // [b-d]
+        case FIRST_ID:
             if (currentChar >= 'a' && currentChar <= 'z') {
-                state = 38;
+                state = FIELD_ID;
             } else if (currentChar >= '2' && currentChar <= '7') {
-                state = 39;
+                state = SECOND_ID;
             } else {
-                state = 40;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_FIELDID;
+                return token_to_return;
             }
 
             break;
 
-        case 25: // [a|e-z]
+        case FIELD_ID:
             if (currentChar >= 'a' && currentChar <= 'z') {
-                state = 25;
+                state = FIELD_ID;
             } else {
-                state = 40;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_FIELDID;
+                return token_to_return;
             }
 
             break;
 
-        case 26: // [0-9]
+        case FIRST_DIGIT:
             if (currentChar >= '0' && currentChar <= '9') {
-                state = 26;
+                state = FIRST_DIGIT;
             } else if (currentChar == '.') {
-                state = 41;
+                state = DIGIT_DOT;
             } else {
-                state = 42;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                token_to_return->token = TK_NUM;
+                token_to_return->lexemeI = atoi(token_to_return->lexeme);
+                return token_to_return;
             }
 
             break;
 
-        case 27: // &&
-            if (currentChar == '&') {
-                state = 43;
-            } else {
-                // ERROR
+        case SECOND_AND:
+            if (currentChar != '&') {
+                fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
             }
 
-            break;
-
-        case 28: // @@
-            if (currentChar == '@') {
-                state = 44;
-            } else {
-                // ERROR
-            }
-
-            break;
-
-        case 29: // ==
-            token_to_return->token = TK_EQ;
-            return token_to_return;
-
-        case 30: // !=
-            token_to_return->token = TK_NE;
-            return token_to_return;
-
-        case 31: // <=
-            token_to_return->token = TK_LE;
-            return token_to_return;
-
-        case 32: // <-
-            if (currentChar == '-') {
-                state = 45;
-            } else {
-                state = 46;
-            }
-
-            break;
-
-        case 33: // < other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            token_to_return->token = TK_LT;
-            return token_to_return;
-
-        case 34: // >=
-            token_to_return->token = TK_GE;
-            return token_to_return;
-
-        case 35: // > other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            token_to_return->token = TK_GT;
-            return token_to_return;
-
-        case 36: // _[a-zA-Z]
-            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
-                state = 36;
-            } else if (currentChar >= '0' && currentChar <= '9') {
-                state = 47;
-            } else {
-                state = 48;
-            }
-
-            break;
-
-        case 37: // #[a-z]
-            if (currentChar >= 'a' && currentChar <= 'z') {
-                state = 37;
-            } else {
-                state = 49;
-            }
-
-            break;
-
-        case 38: // [b-d][a-z]
-            if (currentChar >= 'a' && currentChar <= 'z') {
-                state = 38;
-            } else {
-                state = 40;
-            }
-
-            break;
-
-        case 39: // [b-d][2-7]
-            if (currentChar >= 'b' && currentChar <= 'd') {
-                state = 39;
-            } else if (currentChar >= '2' && currentChar <= '7') {
-                state = 50;
-            } else {
-                state = 51;
-            }
-
-            break;
-
-        case 40: // [b-d] other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            // lookup
-            token_to_return->token = TK_FIELDID;
-            return token_to_return;
-
-        case 41: // [0-9].
-            if (currentChar >= '0' && currentChar <= '9') {
-                state = 52;
-            } else {
-                state = 53;
-            }
-
-            break;
-
-        case 42: // [0-9] other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            token_to_return->token = TK_NUM;
-            token_to_return->lexeme = atoi(token_to_return->lexeme);
-            return token_to_return;
-
-        case 43: // &&&
             token_to_return->token = TK_AND;
             return token_to_return;
-            
-        case 44: // @@@
+
+        case SECOND_OR:
+            if (currentChar != '@') {
+                fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
+            }
+
             token_to_return->token = TK_OR;
             return token_to_return;
 
-        case 45: // <--
+        case LT_MINUS:
             if (currentChar == '-') {
-                state = 54;
+                state = ASSIGNOP;
             } else {
-                // ERROR
+                (token_to_return->lexeme)[token_to_return->lexemeLength - 2] = '\0';
+                token_to_return->lexemeLength -= 2; B->currentPos -= 2;
+                token_to_return->token = TK_LT;
+                return token_to_return;
             }
 
             break;
 
-        case 46: // <- other
-            token_to_return->lexemeLength -= 2; B->currentPos -= 2;
-            token_to_return->token = TK_LT;
-            return token_to_return;
+        case UNDERSCORE_LETTER:
+            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
+                state = UNDERSCORE_LETTER;
+            } else if (currentChar >= '0' && currentChar <= '9') {
+                state = FUNID;
+            } else {
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_FUNID;
+                return token_to_return;
+            }
 
-        case 47: // _[a-zA-Z][0-9]
+            break;
+
+        case HASHTAG_LETTER:
+            if (currentChar >= 'a' && currentChar <= 'z') {
+                state = HASHTAG_LETTER;
+            } else {
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';    
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_RUID;
+                return token_to_return;
+            }
+
+            break;
+
+        case SECOND_ID:
+            if (currentChar >= 'b' && currentChar <= 'd') {
+                state = SECOND_ID;
+            } else if (currentChar >= '2' && currentChar <= '7') {
+                state = NUMBER_ID;
+            } else {
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_ID;
+                return token_to_return;
+            }
+
+            break;
+
+        case DIGIT_DOT:
             if (currentChar >= '0' && currentChar <= '9') {
-                state = 47;
+                state = FIRST_FLDIG;
             } else {
-                state = 48;
+                (token_to_return->lexeme)[token_to_return->lexemeLength - 2] = '\0';
+                token_to_return->lexemeLength -= 2;
+                B->currentPos -= 2;
+                token_to_return->token = TK_NUM;
+                token_to_return->lexemeI = atoi(token_to_return->lexeme);
+                return token_to_return;
             }
 
             break;
 
-        case 48: // _[a-zA-Z][0-9]? other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            // lookup
-            token_to_return->token = TK_FUNID;
-            return token_to_return;
-
-        case 49: // #[a-z] other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            // lookup
-            token_to_return->token = TK_RUID;
-            return token_to_return;
-
-        case 50: // [b-d][2-7][2-7]
-            if (currentChar >= '2' && currentChar <= '7') {
-                state = 50;
-            } else {
-                state = 51;
+        case ASSIGNOP:
+            if (currentChar != '-') {
+                fprintf(stderr, "Line %d\n\tExpected: '-', Received: '%c'\n", B->line, currentChar);
             }
 
-            break;
-
-        case 51: // [b-d][2-7] other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            // lookup
-            token_to_return->token = TK_ID;
-            return token_to_return;
-
-        case 52: // [0-9].[0-9]
-            if (currentChar >= '0' && currentChar <= '9') {
-                state = 55;
-            } else {
-                // ERROR
-            }
-
-            break;
-
-        case 53: // [0-9]. other
-            token_to_return->lexemeLength -= 2;
-            B->currentPos -= 2;
-            token_to_return->token = TK_NUM;
-            token_to_return->lexeme = atoi(token_to_return->lexeme);
-            return token_to_return;
-
-        case 54: // <---
             token_to_return->token = TK_ASSIGNOP;
             return token_to_return;
 
-        case 55: // [0-9].[0-9][0-9]
+        case FUNID:
+            if (currentChar >= '0' && currentChar <= '9') {
+                state = FUNID;
+            } else {
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';    
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_FUNID;
+                return token_to_return;
+            }
+
+            break;
+
+        case NUMBER_ID:
+            if (currentChar >= '2' && currentChar <= '7') {
+                state = NUMBER_ID;
+            } else {
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                // lookup
+                token_to_return->token = TK_ID;
+                return token_to_return;
+            }
+
+            break;
+
+        case FIRST_FLDIG:
+            if (currentChar >= '0' && currentChar <= '9') {
+                state = SECOND_FLDIG;
+            } else {
+                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
+                state = SECOND_FLDIG;
+            }
+
+            break;
+
+        case SECOND_FLDIG:
             if (currentChar == 'E') {
-                state = 56;
+                state = FL_EXP;
             } else {
-                state = 57;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                (currentChar != -1) && --(B->currentPos);
+                token_to_return->token = TK_RNUM;
+                token_to_return->lexemeF = atof(token_to_return->lexeme);
+                return token_to_return;
             }
 
             break;
 
-        case 56: // [0-9].[0-9][0-9]E
+        case FL_EXP:
             if ((currentChar == '+') || (currentChar == '-')) {
-                state = 58;
+                state = FL_EXP_SIGNED;
             } else if (currentChar >= '0' && currentChar <= '9') {
-                state = 59;
+                state = FL_EXP_COMPLETE;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: signed/unsigned exponent, Received: '%c'\n", B->line, currentChar);
+                state = FL_EXP_SIGNED;
             }
 
             break;
 
-        case 57: // [0-9].[0-9][0-9] other
-            --(token_to_return->lexemeLength); --(B->currentPos);
-            token_to_return->token = TK_RNUM;
-            token_to_return->lexeme = atof(token_to_return->lexeme);
-            return token_to_return;
-
-        case 58: // [0-9].[0-9][0-9]E[+-]
+        case FL_EXP_SIGNED:
             if (currentChar >= '0' && currentChar <= '9') {
-                state = 59;
+                state = FL_EXP_COMPLETE;
             } else {
-                // ERROR
+                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
+                state = FL_EXP_COMPLETE;
             }
 
             break;
 
-        case 59: // [0-9].[0-9][0-9]E[+-][0-9]
-            if (currentChar >= '0' && currentChar <= '9') {
-                state = 60;
-            } else {
-                // ERROR
+        case FL_EXP_COMPLETE:
+            if (currentChar < '0' || currentChar > '9') {
+                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
             }
 
-            break;
-
-        case 60: // [0-9].[0-9][0-9]E[+-][0-9][0-9]
             token_to_return->token = TK_RNUM;
-            token_to_return->lexeme = atof(token_to_return->lexeme);
+            token_to_return->lexemeF = atof(token_to_return->lexeme);
             return token_to_return;
 
         default:
             break;
         }
-    
-        ++(B->currentPos);
     }
 
+    return NULL;
 }
 
 void removeComments(char *testcaseFile, char *cleanFile) {
