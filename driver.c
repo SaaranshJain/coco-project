@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "lexer.h"
+#include "lookup.h"
 // #include "parser.h"
 
 int main(int argc, char *argv[]) {
@@ -60,8 +61,9 @@ int main(int argc, char *argv[]) {
                 FILE* testcasefile = fopen(argv[1], "r");
                 TwinBuffer buffer = getStream(testcasefile);
                 TokenInfo token;
+                LookupTable lt = create_lookup_table();
 
-                while((token = getNextToken(buffer)) != NULL) {
+                while((token = getNextToken(buffer, lt)) != NULL) {
                     printf("Token type: %s\n", ENUM_NAME_FROM_VALUE[token->token]);
 
                     if (token->token == TK_NUM) {

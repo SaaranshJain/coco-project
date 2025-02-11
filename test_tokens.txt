@@ -9,19 +9,19 @@ Printing Tokens:
 Token type: TK_FUNID
 Lexeme: _statistics
 
-Token type: TK_FIELDID
+Token type: TK_INPUT
 Lexeme: input
 
-Token type: TK_FIELDID
+Token type: TK_PARAMETER
 Lexeme: parameter
 
-Token type: TK_FIELDID
+Token type: TK_LIST
 Lexeme: list
 
 Token type: TK_SQL
 Lexeme: [
 
-Token type: TK_FIELDID
+Token type: TK_INT
 Lexeme: int
 
 Token type: TK_ID
@@ -30,7 +30,7 @@ Lexeme: c2dbc
 Token type: TK_COMMA
 Lexeme: ,
 
-Token type: TK_FIELDID
+Token type: TK_INT
 Lexeme: int
 
 Token type: TK_ID
@@ -39,7 +39,7 @@ Lexeme: d7
 Token type: TK_COMMA
 Lexeme: ,
 
-Token type: TK_FIELDID
+Token type: TK_INT
 Lexeme: int
 
 Token type: TK_ID
@@ -48,19 +48,19 @@ Lexeme: b2d567
 Token type: TK_SQR
 Lexeme: ]
 
-Token type: TK_FIELDID
+Token type: TK_OUTPUT
 Lexeme: output
 
-Token type: TK_FIELDID
+Token type: TK_PARAMETER
 Lexeme: parameter
 
-Token type: TK_FIELDID
+Token type: TK_LIST
 Lexeme: list
 
 Token type: TK_SQL
 Lexeme: [
 
-Token type: TK_FIELDID
+Token type: TK_REAL
 Lexeme: real
 
 Token type: TK_ID
@@ -69,7 +69,7 @@ Lexeme: d2
 Token type: TK_COMMA
 Lexeme: ,
 
-Token type: TK_FIELDID
+Token type: TK_REAL
 Lexeme: real
 
 Token type: TK_ID
@@ -81,10 +81,10 @@ Lexeme: ]
 Token type: TK_SEM
 Lexeme: ;
 
-Token type: TK_FIELDID
+Token type: TK_TYPE
 Lexeme: type
 
-Token type: TK_FIELDID
+Token type: TK_REAL
 Lexeme: real
 
 Token type: TK_COLON
@@ -96,7 +96,7 @@ Lexeme: c3
 Token type: TK_COLON
 Lexeme: :
 
-Token type: TK_FIELDID
+Token type: TK_GLOBAL
 Lexeme: global
 
 Token type: TK_SEM
@@ -168,7 +168,7 @@ Lexeme: 3.230000
 Token type: TK_SEM
 Lexeme: ;
 
-Token type: TK_FIELDID
+Token type: TK_RETURN
 Lexeme: return
 
 Token type: TK_SQL
@@ -189,7 +189,7 @@ Lexeme: ]
 Token type: TK_SEM
 Lexeme: ;
 
-Token type: TK_FIELDID
+Token type: TK_END
 Lexeme: end
 
 ------------------------------------

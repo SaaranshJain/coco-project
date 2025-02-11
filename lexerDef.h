@@ -2,6 +2,7 @@
 #define LEXERDEF_H
 
 #include <stdbool.h>
+#include <stdio.h>
 #define TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE 2048
 
 enum TOKEN_TYPE
@@ -56,5 +57,23 @@ struct twinBuffer
 };
 
 typedef struct twinBuffer *TwinBuffer;
+
+struct lookupTableNode
+{
+    char *lexeme;
+    enum TOKEN_TYPE token;
+    int defined_at_line;
+    struct lookupTableNode *next;
+};
+
+typedef struct lookupTableNode *LookupTableNode;
+
+struct lookupTable
+{
+    int size, capacity;
+    LookupTableNode* nodes;
+};
+
+typedef struct lookupTable *LookupTable;
 
 #endif
