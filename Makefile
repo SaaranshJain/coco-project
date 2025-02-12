@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -std=c11
+CFLAGS = -Wall -Wextra -O2 -std=c11
 TARGET = compiler
 SRCS = driver.c lexer.c lookup.c
 
@@ -9,4 +9,4 @@ $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) *.o

@@ -44,17 +44,14 @@ bool refresh_buffer(TwinBuffer B)
 
 TokenInfo return_with_lookup(LookupTable lt, TokenInfo curr_token, int line)
 {
-    LookupTableNode searched_node = search(lt, curr_token->lexeme);
+    LookupTableNode searched_node = search(lt, curr_token->lexeme, curr_token->lexemeLength);
     if (searched_node != NULL)
     {
-        free(curr_token->lexeme);
-        curr_token->lexeme = searched_node->lexeme;
         curr_token->token = searched_node->token;
-        curr_token->lexemeLength = strlen(curr_token->lexeme);
     }
     else
     {
-        insert(lt, curr_token->lexeme, curr_token->token, line);
+        insert(lt, curr_token->lexeme, curr_token->lexemeLength, curr_token->token, line);
     }
 
     return curr_token;
