@@ -40,7 +40,7 @@
 <factor> --> TK_OP <arithmeticExpression> TK_CL | <var>
 <highPrecedenceOperator> --> TK_MUL | TK_DIV
 <lowPrecedenceOperator> --> TK_PLUS | TK_MINUS
-<booleanExpression> --> TK_OP <booleanExpression> TK_CL <logicalOp> TK_OP <booleanExpr> TK_CL
+<booleanExpression> --> TK_OP <booleanExpression> TK_CL <logicalOp> TK_OP <booleanExpression> TK_CL
 <booleanExpression> --> <var> <relationalOp> <var>
 <booleanExpression> --> TK_NOT TK_OP <booleanExpr> TK_CL
 <var> --> TK_NUM | TK_RNUM | <singleOrRecId>
