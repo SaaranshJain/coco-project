@@ -1,15 +1,20 @@
-FirstAndFollow ComputeFirstAndFollowSets (grammar G) {
-    // to be implemented
+#include <stdlib.h>
+#include "parser.h"
+
+FirstAndFollow* ComputeFirstAndFollowSets (Grammar G)
+{
+    return NULL;
 }
 
-void createParseTable(FirstAndFollow F, table T) {
-    // to be implemented
+void createParseTable(FirstAndFollow F, Table T)
+{
 }
 
-void parseInputSourceCode(char *testcaseFile, table T) {
-    // to be implemented
+ParseTree parseInputSourceCode(char *testcaseFile, Table T)
+{
+    return NULL;
 }
 
-void printParseTree(parseTree PT, char *outfile) {
-    // to be implemented
+void printParseTree(ParseTree PT, char *outfile)
+{
 }
