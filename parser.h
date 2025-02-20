@@ -7,7 +7,7 @@ FirstAndFollow* ComputeFirstAndFollowSets (Grammar G);
 
 void createParseTable(FirstAndFollow F, Table T);
 
-ParseTree parseInputSourceCode(char *testcaseFile, Table T);
+ParseTree parseInputSourceCode(char *testcaseFileName, Table T);
 
 void printParseTree(ParseTree PT, char *outfile);
 

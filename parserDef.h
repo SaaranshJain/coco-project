@@ -5,7 +5,7 @@
 
 enum NON_TERMINAL
 {
-    NT_Program,
+    NT_Program = 37,
     NT_MainFunction,
     NT_OtherFunctions,
     NT_Function,
@@ -121,6 +121,6 @@ struct parseTree
     struct parseTreeNode* root;
 };
 
-typedef parseTree* ParseTree;
+typedef struct parseTree* ParseTree;
 
 #endif
