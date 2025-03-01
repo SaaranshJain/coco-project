@@ -37,7 +37,7 @@ Grammar getLanguageGrammar(){\n""")
                         f.write("\tRuleRightSideElement " + rhs_elem.lower() + " = (RuleRightSideElement) malloc(sizeof(struct ruleRightSideElement));\n")
                         f.write("\t*" + rhs_elem.lower() + " = (struct ruleRightSideElement) {")
                         f.write(str(is_epsilon).lower() + ", " + str(is_terminal).lower() + ", ")
-                        f.write(f".symbol.terminal = {'TK_ID' if is_epsilon else rhs_elem}")
+                        f.write(f"{{.terminal = {'TK_ID' if is_epsilon else rhs_elem} }}")
                         f.write("};\n")
 
                     else:
@@ -47,7 +47,7 @@ Grammar getLanguageGrammar(){\n""")
                         f.write("\tRuleRightSideElement " + rhs_elem[1:-1] + " = (RuleRightSideElement) malloc(sizeof(struct ruleRightSideElement));\n")
                         f.write("\t*" + rhs_elem[1:-1] + " = (struct ruleRightSideElement) {")
                         f.write(str(is_epsilon).lower() + ", " + str(is_terminal).lower() + ", ")
-                        f.write(".symbol.nonTerminal = NT_" + rhs_elem[1].capitalize() + rhs_elem[2:-1])
+                        f.write("{.nonTerminal = NT_" + rhs_elem[1].capitalize() + rhs_elem[2:-1] + "}")
                         f.write("};\n")
                     seen_symbols.add(rhs_elem)
 
