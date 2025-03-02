@@ -17,7 +17,10 @@ int main(int argc, char *argv[]) {
         printf("3. Generate Parse Tree\n");
 
         int input;
-        scanf("%d", &input);
+        if (scanf("%d", &input) != 1) {
+            printf("Invalid input\n");
+            return 1;
+        }
 
         switch (input) {
             case 0:
@@ -39,11 +42,9 @@ int main(int argc, char *argv[]) {
                     return 1;
                 }
                 
-                char *line = NULL;
-                size_t len = 0;
-                ssize_t read;
+                char line[2048];
 
-                while ((read = getline(&line, &len, cleanFile)) != -1) {
+                while (fgets(line, sizeof(line), cleanFile)) {
                     printf("%s", line);
                 }
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
                 printf("Clean file generated\n");
                 break;
             case 2:
-                if (argc != 2) {
+                if (argc < 2) {
                     printf("Usage: %s <testcase file>\n", argv[0]);
                     return 1;
                 }

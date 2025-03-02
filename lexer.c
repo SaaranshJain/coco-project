@@ -260,7 +260,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_LT;
                 return token_to_return;
             }
@@ -276,7 +276,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_GT;
                 return token_to_return;
             }
@@ -335,7 +335,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FIELDID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -350,7 +350,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FIELDID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -369,7 +369,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_NUM;
                 token_to_return->lexemeI = atoi(token_to_return->lexeme);
                 return token_to_return;
@@ -423,7 +423,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FUNID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -438,7 +438,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_RUID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -457,7 +457,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_ID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -498,7 +498,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FUNID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -513,7 +513,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_ID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -541,7 +541,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
-                (currentChar != -1) && --(B->currentPos);
+                B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_RNUM;
                 token_to_return->lexemeF = atof(token_to_return->lexeme);
                 return token_to_return;
@@ -612,11 +612,9 @@ void removeComments(char *testcaseFile, char *cleanFile)
         printf("Error opening output file\n");
         return;
     }
-    // Read the input file line by line
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    while ((read = getline(&line, &len, inputFile)) != -1)
+
+    char line[2048];
+    while (fgets(line, sizeof(line), inputFile))
     {
         char *commentStart = strchr(line, '%');
         if (commentStart != NULL)
