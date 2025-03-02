@@ -1,0 +1,13 @@
+_main
+    type int: c3bd;
+    c3bd <--- 5;
+    while(c3bd < 10
+        c3bd <--- c3bd + 1;
+        write(c3bd);
+    endwhile
+    if(c3bd = 10)
+        then
+            write(c3bd @@ 0);  % Error: Invalid operator '@@'
+        endif
+    return;
+end

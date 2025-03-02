@@ -21,7 +21,7 @@ enum TOKEN_TYPE
     TK_CALL, TK_RECORD, TK_ENDRECORD, TK_ELSE,
     TK_AND, TK_OR, TK_NOT, TK_LT,
     TK_LE, TK_EQ, TK_GT, TK_GE,
-    TK_NE
+    TK_NE, ERROR
 };
 
 enum STATE
@@ -32,7 +32,7 @@ enum STATE
     FUNID, NUMBER_ID, FIRST_FLDIG, SECOND_FLDIG, FL_EXP, FL_EXP_SIGNED, FL_EXP_COMPLETE
 };
 
-extern char* ENUM_NAME_FROM_VALUE[57];
+extern char* ENUM_NAME_FROM_VALUE[58];
 
 struct tokenInfo
 {

@@ -5,7 +5,7 @@
 #include "lexer.h"
 #include "lookup.h"
 
-char *ENUM_NAME_FROM_VALUE[57] = {
+char *ENUM_NAME_FROM_VALUE[58] = {
     "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID", "TK_ID",
     "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID",
     "TK_WITH", "TK_PARAMETERS", "TK_END", "TK_WHILE",
@@ -20,7 +20,7 @@ char *ENUM_NAME_FROM_VALUE[57] = {
     "TK_CALL", "TK_RECORD", "TK_ENDRECORD", "TK_ELSE",
     "TK_AND", "TK_OR", "TK_NOT", "TK_LT",
     "TK_LE", "TK_EQ", "TK_GT", "TK_GE",
-    "TK_NE"};
+    "TK_NE", "ERROR"};
 
 TwinBuffer getStream(FILE *fp)
 {
@@ -188,6 +188,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
                 if (currentChar != -1)
                 {
                     fprintf(stderr, "Line %d\n\tUnexpected character: %c\n\n", B->line, currentChar);
+                    (token_to_return->lexeme)[token_to_return->lexemeLength] = '\0';
+                    token_to_return->token = ERROR;
+                    return token_to_return;
                 }
 
                 state = START;
@@ -203,7 +206,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
-                state = SECOND_AND;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -216,7 +222,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
-                state = SECOND_OR;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -230,6 +239,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -243,6 +256,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -291,7 +308,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: lowercase/uppercase alphabet, Received: '%c'\n", B->line, currentChar);
-                state = UNDERSCORE_LETTER;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -304,7 +324,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: lowercase alphabet, Received: '%c'\n", B->line, currentChar);
-                state = HASHTAG_LETTER;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -381,6 +404,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             if (currentChar != '&')
             {
                 fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             token_to_return->token = TK_AND;
@@ -390,6 +417,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             if (currentChar != '@')
             {
                 fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             token_to_return->token = TK_OR;
@@ -485,6 +516,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             if (currentChar != '-')
             {
                 fprintf(stderr, "Line %d\n\tExpected: '-', Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             token_to_return->token = TK_ASSIGNOP;
@@ -528,7 +563,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
-                state = SECOND_FLDIG;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -561,7 +599,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: signed/unsigned exponent, Received: '%c'\n", B->line, currentChar);
-                state = FL_EXP_SIGNED;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -574,7 +615,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             else
             {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
-                state = FL_EXP_COMPLETE;
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             break;
@@ -583,6 +627,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             if (currentChar < '0' || currentChar > '9')
             {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
+                (token_to_return->lexeme)[--(token_to_return->lexemeLength)] = '\0';
+                --(B->currentPos);
+                token_to_return->token = ERROR;
+                return token_to_return;
             }
 
             token_to_return->token = TK_RNUM;

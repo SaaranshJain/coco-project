@@ -1,0 +1,9 @@
+_main
+    type int: 2abc;
+    type int: d2cd;
+    d2cd <-- 100;           % Error: Incorrect assignment operator (should be <---).
+    type real: c3bd;
+    c3bd <--- 23.6;         % Error: Real literal malformed (requires exactly two digits after the dot).
+    write(!d2cd);           % Error: Invalid token '!'
+    return;
+end

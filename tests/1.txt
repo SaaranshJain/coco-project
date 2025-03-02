@@ -1,0 +1,6 @@
+_main
+    type int: b2d3;
+    b2d3 <--- 123;
+    write(b2d3);
+    return;
+end

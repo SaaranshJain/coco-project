@@ -1,0 +1,14 @@
+definetype union #student as #newname;
+
+record #tagged
+    type int: tagval;
+    type #newname: info;
+endrecord
+
+_main
+    type record #tagged: d2cd;
+    d2cd.tagval <--- 1;
+    d2cd.info.rollno <--- 45;
+    write(d2cd.info.rollno);
+    return;
+end
