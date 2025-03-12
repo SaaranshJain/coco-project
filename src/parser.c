@@ -75,7 +75,7 @@ FirstAndFollow *ComputeFirstAndFollowSets(Grammar G) {
 }
 
 void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
-    int NON_TERMINAL_OFFSET = 59; // First non-terminal index
+    int NON_TERMINAL_OFFSET = NUM_TERMINALS; // First non-terminal index
 
     // init table
     for (int i = 0; i < NUM_NON_TERMINALS; i++) {
