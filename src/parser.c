@@ -74,52 +74,31 @@ FirstAndFollow *ComputeFirstAndFollowSets(Grammar G) {
     return firstAndFollowSets;
 }
 
-int computeTokenCount(FirstAndFollow *F) {
-    int maxToken = 0;
-    for (int i = 0; i < NT_A; i++) {
-        for (int j = 0; j < F[i]->firstSetSize; j++) {
-            if (F[i]->firstSet[j] > maxToken) {
-                maxToken = F[i]->firstSet[j];
-            }
-        }
-        for (int j = 0; j < F[i]->followSetSize; j++) {
-            if (F[i]->followSet[j] > maxToken) {
-                maxToken = F[i]->followSet[j];
-            }
-        }
-    }
-    return maxToken + 1; // count = max index + 1
-}
-
 void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
-    int TOKEN_COUNT = computeTokenCount(F);
-    int TOKEN_DOLLAR_INDEX = TOKEN_COUNT - 1;
+    int NON_TERMINAL_OFFSET = 59; // First non-terminal index
 
-    // init empty table
-    for (int i = 0; i < NT_A; i++) {
-        for (int j = 0; j < TOKEN_COUNT; j++) {
-            T[i * TOKEN_COUNT + j] = NULL;
+    // init table
+    for (int i = 0; i < NUM_NON_TERMINALS; i++) {
+        for (int j = 0; j < NUM_TERMINALS; j++) {
+            T[i * NUM_TERMINALS + j] = NULL;
         }
     }
 
     for (int i = 0; i < G->numRules; i++) {
         Rule rule = G->rules[i];
-        enum NON_TERMINAL lhs = rule->lhs;
+        int row_index = rule->lhs - NON_TERMINAL_OFFSET; // Normalize non-terminal index
 
-        for (int j = 0; j < F[lhs]->firstSetSize; j++) {
-            enum TOKEN_TYPE terminal = F[lhs]->firstSet[j];
-            T[lhs * TOKEN_COUNT + terminal] = rule;
+        // first set
+        for (int j = 0; j < F[row_index]->firstSetSize; j++) {
+            enum TOKEN_TYPE terminal = F[row_index]->firstSet[j];
+            T[row_index * NUM_TERMINALS + terminal] = rule; 
         }
-
-        // Handle epsilon using follow
+        
+        // epsilon case using follow set
         if (rule->rhsLength == 1 && rule->rhs[0]->isEpsilon) {
-            for (int j = 0; j < F[lhs]->followSetSize; j++) {
-                enum TOKEN_TYPE terminal = F[lhs]->followSet[j];
-                T[lhs * TOKEN_COUNT + terminal] = rule;
-            }
-
-            if (F[lhs]->followSetDollar) {
-                T[lhs * TOKEN_COUNT + TOKEN_DOLLAR_INDEX] = rule;
+            for (int j = 0; j < F[row_index]->followSetSize; j++) {
+                enum TOKEN_TYPE terminal = F[row_index]->followSet[j];
+                T[row_index * NUM_TERMINALS + terminal] = rule;
             }
         }
     }
