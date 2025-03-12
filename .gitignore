@@ -1,4 +1,6 @@
+# vscode
 .vscode
+.clang-format
 
 # Build files
 compiler

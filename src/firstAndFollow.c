@@ -1,102 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "parserDef.h" 
-
-// Helper Functions 
-int isTerminalInSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE* set, int setSize);
-int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE** set, int* setSize, int* capacity);
-void computeFirstSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TERMINAL nonTerminal);
-void computeFollowSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TERMINAL nonTerminal);
-
-// Main Function Definition
-FirstAndFollow* ComputeFirstAndFollowSets(Grammar G) {
-    if (G == NULL) return NULL;
-
-    int numNonTerminals = NT_A + 1; // Assuming NT_A is the last non-terminal in your enum
-    FirstAndFollow* firstAndFollowSets = (FirstAndFollow*)malloc(numNonTerminals * sizeof(FirstAndFollow));
-    if (!firstAndFollowSets) {
-        perror("Memory allocation failed");
-        return NULL;
-    }
-
-    // Initialize First and Follow Sets for each Non-Terminal
-    for (int i = 0; i < numNonTerminals; i++) {
-        firstAndFollowSets[i] = (FirstAndFollow)malloc(sizeof(struct firstAndFollow));
-        if (!firstAndFollowSets[i]) {
-            perror("Memory allocation failed");
-            // Clean up previously allocated memory
-            for (int j = 0; j < i; j++) {
-                free(firstAndFollowSets[j]);
-            }
-            free(firstAndFollowSets);
-            return NULL;
-        }
-
-        firstAndFollowSets[i]->nonTerminal = (enum NON_TERMINAL)i;
-        firstAndFollowSets[i]->firstSetSize = 0;
-        firstAndFollowSets[i]->firstSetEpsilon = false;
-        firstAndFollowSets[i]->followSetSize = 0;
-        firstAndFollowSets[i]->followSetDollar = false;
-
-        // Initial allocation for sets (dynamic resizing later)
-        int initialCapacity = 5;
-        firstAndFollowSets[i]->firstSet = (enum TOKEN_TYPE*)malloc(initialCapacity * sizeof(enum TOKEN_TYPE));
-         if (!firstAndFollowSets[i]->firstSet) {
-            perror("Memory allocation failed");
-             // Clean up previously allocated memory
-            for (int j = 0; j < numNonTerminals; j++) {
-                 if (firstAndFollowSets[j]->firstSet) free(firstAndFollowSets[j]->firstSet);
-                free(firstAndFollowSets[j]);
-            }
-            free(firstAndFollowSets);
-            return NULL;
-        }
-        firstAndFollowSets[i]->followSet = (enum TOKEN_TYPE*)malloc(initialCapacity * sizeof(enum TOKEN_TYPE));
-        if (!firstAndFollowSets[i]->followSet) {
-            perror("Memory allocation failed");
-             // Clean up previously allocated memory
-            for (int j = 0; j < numNonTerminals; j++) {
-                 if (firstAndFollowSets[j]->firstSet) free(firstAndFollowSets[j]->firstSet);
-                 if (firstAndFollowSets[j]->followSet) free(firstAndFollowSets[j]->followSet);
-                free(firstAndFollowSets[j]);
-            }
-            free(firstAndFollowSets);
-            return NULL;
-        }
-
-    }
-
-    // Compute FIRST sets for all non-terminals
-    for (int i = 0; i < numNonTerminals; i++) {
-        computeFirstSet(G, firstAndFollowSets, (enum NON_TERMINAL)i);
-    }
-
-    // Compute FOLLOW sets for all non-terminals
-    computeFollowSet(G, firstAndFollowSets, G->startSymbol);
-    for (int i = 0; i < numNonTerminals; i++) {
-         computeFollowSet(G, firstAndFollowSets, (enum NON_TERMINAL)i);
-    }
-
-
-
-    return firstAndFollowSets;
-}
-
-// Implementations of Helper Functions
+#include "firstAndFollow.h"
 
 // Checks if a terminal is already present in a set
-int isTerminalInSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE* set, int setSize) {
+bool isTerminalInSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE *set, int setSize) {
     for (int i = 0; i < setSize; i++) {
         if (set[i] == terminal) {
-            return 1; // Found
+            return true; // Found
         }
     }
-    return 0; // Not found
+    return false; // Not found
 }
 
 // Adds a terminal to a set, resizing if necessary
-int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE** set, int* setSize, int* capacity) {
+int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE **set, int *setSize, int *capacity) {
     if (isTerminalInSet(terminal, *set, *setSize)) {
         return 0; // Already in the set
     }
@@ -104,7 +22,7 @@ int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE** set, int* setSi
     if (*setSize == *capacity) {
         // Resize the set
         *capacity *= 2;
-        enum TOKEN_TYPE* newSet = (enum TOKEN_TYPE*)realloc(*set, *capacity * sizeof(enum TOKEN_TYPE));
+        enum TOKEN_TYPE *newSet = (enum TOKEN_TYPE *)realloc(*set, *capacity * sizeof(enum TOKEN_TYPE));
         if (!newSet) {
             perror("Memory allocation failed");
             return -1; // Indicate failure
@@ -117,7 +35,7 @@ int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE** set, int* setSi
     return 1; // Added successfully
 }
 
-void computeFirstSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TERMINAL nonTerminal) {
+void computeFirstSet(Grammar G, FirstAndFollow *firstAndFollowSets, enum NON_TERMINAL nonTerminal) {
     for (int i = 0; i < G->numRules; i++) {
         if (G->rules[i]->lhs == nonTerminal) {
             // Iterating through RHS of the rule
@@ -128,8 +46,9 @@ void computeFirstSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TER
                                                   &firstAndFollowSets[nonTerminal]->firstSet,
                                                   &firstAndFollowSets[nonTerminal]->firstSetSize,
                                                   &firstAndFollowSets[nonTerminal]->firstSetSize);
-                    if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
-                    break; // Move to the next rule
+                    if (result == -1)
+                        exit(EXIT_FAILURE); // Handle memory allocation failure
+                    break;                  // Move to the next rule
                 } else {
                     // If it's a non-terminal, add FIRST(non-terminal) to FIRST(nonTerminal)
                     enum NON_TERMINAL currentNonTerminal = G->rules[i]->rhs[j]->symbol.nonTerminal;
@@ -140,38 +59,38 @@ void computeFirstSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TER
                                                       &firstAndFollowSets[nonTerminal]->firstSet,
                                                       &firstAndFollowSets[nonTerminal]->firstSetSize,
                                                       &firstAndFollowSets[nonTerminal]->firstSetSize);
-                         if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
+                        if (result == -1)
+                            exit(EXIT_FAILURE); // Handle memory allocation failure
                         added += result;
-
                     }
 
                     // If FIRST(currentNonTerminal) contains epsilon, continue to the next symbol on RHS
                     if (!firstAndFollowSets[currentNonTerminal]->firstSetEpsilon) {
                         break; // Stop if epsilon is not in FIRST(currentNonTerminal)
                     }
-                     if (firstAndFollowSets[currentNonTerminal]->firstSetEpsilon && j == G->rules[i]->rhsLength -1){
+                    if (firstAndFollowSets[currentNonTerminal]->firstSetEpsilon && j == G->rules[i]->rhsLength - 1) {
                         firstAndFollowSets[nonTerminal]->firstSetEpsilon = true;
                     }
                 }
             }
-             if(G->rules[i]->rhsLength == 1 && G->rules[i]->rhs[0]->isEpsilon){
-                  firstAndFollowSets[nonTerminal]->firstSetEpsilon = true;
-             }
+            if (G->rules[i]->rhsLength == 1 && G->rules[i]->rhs[0]->isEpsilon) {
+                firstAndFollowSets[nonTerminal]->firstSetEpsilon = true;
+            }
         }
     }
 }
 
-void computeFollowSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TERMINAL nonTerminal) {
+void computeFollowSet(Grammar G, FirstAndFollow *firstAndFollowSets, enum NON_TERMINAL nonTerminal) {
 
-    if (nonTerminal == G->startSymbol){
+    if (nonTerminal == G->startSymbol) {
         int result = addTerminalToSet(TK_DOLLAR,
                                       &firstAndFollowSets[nonTerminal]->followSet,
                                       &firstAndFollowSets[nonTerminal]->followSetSize,
                                       &firstAndFollowSets[nonTerminal]->followSetSize);
-         if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
+        if (result == -1)
+            exit(EXIT_FAILURE); // Handle memory allocation failure
         firstAndFollowSets[nonTerminal]->followSetDollar = true;
     }
-
 
     for (int i = 0; i < G->numRules; i++) {
         for (int j = 0; j < G->rules[i]->rhsLength; j++) {
@@ -185,8 +104,8 @@ void computeFollowSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TE
                                                       &firstAndFollowSets[nonTerminal]->followSet,
                                                       &firstAndFollowSets[nonTerminal]->followSetSize,
                                                       &firstAndFollowSets[nonTerminal]->followSetSize);
-                         if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
-
+                        if (result == -1)
+                            exit(EXIT_FAILURE); // Handle memory allocation failure
                     } else {
                         // beta starts with a non-terminal
                         enum NON_TERMINAL nextNonTerminal = G->rules[i]->rhs[j + 1]->symbol.nonTerminal;
@@ -195,24 +114,24 @@ void computeFollowSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TE
                                                           &firstAndFollowSets[nonTerminal]->followSet,
                                                           &firstAndFollowSets[nonTerminal]->followSetSize,
                                                           &firstAndFollowSets[nonTerminal]->followSetSize);
-                             if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
+                            if (result == -1)
+                                exit(EXIT_FAILURE); // Handle memory allocation failure
                         }
                         // If epsilon is in FIRST(beta), add FOLLOW(A) to FOLLOW(B)
                         if (firstAndFollowSets[nextNonTerminal]->firstSetEpsilon) {
-                            
+
                             enum NON_TERMINAL A = G->rules[i]->lhs;
                             for (int k = 0; k < firstAndFollowSets[A]->followSetSize; k++) {
                                 int result = addTerminalToSet(firstAndFollowSets[A]->followSet[k],
                                                               &firstAndFollowSets[nonTerminal]->followSet,
                                                               &firstAndFollowSets[nonTerminal]->followSetSize,
                                                               &firstAndFollowSets[nonTerminal]->followSetSize);
-                                 if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
+                                if (result == -1)
+                                    exit(EXIT_FAILURE); // Handle memory allocation failure
                             }
-                            if(firstAndFollowSets[A]->followSetDollar){
+                            if (firstAndFollowSets[A]->followSetDollar) {
                                 firstAndFollowSets[nonTerminal]->followSetDollar = true;
                             }
-
-
                         }
                     }
                 } else {
@@ -224,9 +143,10 @@ void computeFollowSet(Grammar G, FirstAndFollow* firstAndFollowSets, enum NON_TE
                                                       &firstAndFollowSets[nonTerminal]->followSet,
                                                       &firstAndFollowSets[nonTerminal]->followSetSize,
                                                       &firstAndFollowSets[nonTerminal]->followSetSize);
-                         if (result == -1) exit(EXIT_FAILURE); // Handle memory allocation failure
+                        if (result == -1)
+                            exit(EXIT_FAILURE); // Handle memory allocation failure
                     }
-                    if(firstAndFollowSets[A]->followSetDollar){
+                    if (firstAndFollowSets[A]->followSetDollar) {
                         firstAndFollowSets[nonTerminal]->followSetDollar = true;
                     }
                 }

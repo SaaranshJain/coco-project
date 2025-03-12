@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <string.h>
-#include <stdlib.h>
 #include "lexer.h"
 #include "lookup.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-char *ENUM_NAME_FROM_VALUE[58] = {
-    "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID", "TK_ID",
-    "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID",
+char *ENUM_NAME_FROM_VALUE[NUM_TERMINALS] = {
+    "TK_DOLLAR", "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID",
+    "TK_ID", "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID",
     "TK_WITH", "TK_PARAMETERS", "TK_END", "TK_WHILE",
     "TK_UNION", "TK_ENDUNION", "TK_DEFINETYPE", "TK_AS",
     "TK_TYPE", "TK_MAIN", "TK_GLOBAL", "TK_PARAMETER",
@@ -22,8 +22,7 @@ char *ENUM_NAME_FROM_VALUE[58] = {
     "TK_LE", "TK_EQ", "TK_GT", "TK_GE",
     "TK_NE", "ERROR"};
 
-TwinBuffer getStream(FILE *fp)
-{
+TwinBuffer getStream(FILE *fp) {
     TwinBuffer tb = (TwinBuffer)malloc(sizeof(struct twinBuffer));
     tb->currentBuffer = tb->buffer1;
     tb->currentPos = 0;
@@ -33,31 +32,25 @@ TwinBuffer getStream(FILE *fp)
     return tb;
 }
 
-bool refresh_buffer(TwinBuffer B)
-{
+bool refresh_buffer(TwinBuffer B) {
     B->currentBuffer = (B->currentBuffer == B->buffer1) ? B->buffer2 : B->buffer1;
     B->currentPos = 0;
     B->bufferSize = fread(B->currentBuffer, 1, TWIN_BUFFER_INDIVIDUAL_BUFFER_SIZE, B->fp);
     return !(B->bufferSize == 0);
 }
 
-TokenInfo return_with_lookup(LookupTable lt, TokenInfo curr_token, int line)
-{
+TokenInfo return_with_lookup(LookupTable lt, TokenInfo curr_token, int line) {
     LookupTableNode searched_node = search(lt, curr_token->lexeme, curr_token->lexemeLength);
-    if (searched_node != NULL)
-    {
+    if (searched_node != NULL) {
         curr_token->token = searched_node->token;
-    }
-    else
-    {
+    } else {
         insert(lt, curr_token->lexeme, curr_token->lexemeLength, curr_token->token, line);
     }
 
     return curr_token;
 }
 
-TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
-{
+TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
     enum STATE state = START;
     char currentChar;
     int end_flag = 2;
@@ -68,124 +61,76 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
     memset(token_to_return->lexeme, '\0', 32);
     token_to_return->lexemeLength = 0;
 
-    while ((B->currentPos < B->bufferSize) || refresh_buffer(B) || end_flag)
-    { // use short circuit evaluation, as long as pos < size it will continue, if not it will refresh
-        if (token_to_return->lexemeLength >= current_lexeme_cap)
-        {
+    while ((B->currentPos < B->bufferSize) || refresh_buffer(B) || end_flag) { // use short circuit evaluation, as long as pos < size it will continue, if not it will refresh
+        if (token_to_return->lexemeLength >= current_lexeme_cap) {
             token_to_return->lexeme = realloc(token_to_return->lexeme, 2 * current_lexeme_cap);
             memset(token_to_return->lexeme + current_lexeme_cap, '\0', current_lexeme_cap);
             current_lexeme_cap = current_lexeme_cap + current_lexeme_cap;
         }
 
-        if ((B->currentPos >= B->bufferSize) && end_flag)
-        {
+        if ((B->currentPos >= B->bufferSize) && end_flag) {
             --end_flag;
             currentChar = -1;
-        }
-        else
-        {
+        } else {
             currentChar = B->currentBuffer[(B->currentPos)++];
             (token_to_return->lexeme)[(token_to_return->lexemeLength)++] = currentChar;
         }
 
-        switch (state)
-        {
+        switch (state) {
         case START:
-            if (currentChar == '\t' || currentChar == '\r' || currentChar == ' ')
-            {
+            if (currentChar == '\t' || currentChar == '\r' || currentChar == ' ') {
                 state = START;
                 token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
-            }
-            else if (currentChar >= 40 && currentChar <= 47)
-            { // [40-47] are ['(', ')', '*', '+', ',', '-', '.', '/']
+            } else if (currentChar >= 40 && currentChar <= 47) { // [40-47] are ['(', ')', '*', '+', ',', '-', '.', '/']
                 int tokens[8] = {TK_OP, TK_CL, TK_MUL, TK_PLUS, TK_COMMA, TK_MINUS, TK_DOT, TK_DIV};
                 token_to_return->token = tokens[currentChar - 40];
                 return token_to_return;
-            }
-            else if (currentChar == ':')
-            {
+            } else if (currentChar == ':') {
                 token_to_return->token = TK_COLON;
                 return token_to_return;
-            }
-            else if (currentChar == ';')
-            {
+            } else if (currentChar == ';') {
                 token_to_return->token = TK_SEM;
                 return token_to_return;
-            }
-            else if (currentChar == '[')
-            {
+            } else if (currentChar == '[') {
                 token_to_return->token = TK_SQL;
                 return token_to_return;
-            }
-            else if (currentChar == ']')
-            {
+            } else if (currentChar == ']') {
                 token_to_return->token = TK_SQR;
                 return token_to_return;
-            }
-            else if (currentChar == '~')
-            {
+            } else if (currentChar == '~') {
                 token_to_return->token = TK_NOT;
                 return token_to_return;
-            }
-            else if (currentChar == '&')
-            {
+            } else if (currentChar == '&') {
                 state = FIRST_AND;
-            }
-            else if (currentChar == '@')
-            {
+            } else if (currentChar == '@') {
                 state = FIRST_OR;
-            }
-            else if (currentChar == '=')
-            {
+            } else if (currentChar == '=') {
                 state = FIRST_EQ;
-            }
-            else if (currentChar == '!')
-            {
+            } else if (currentChar == '!') {
                 state = FIRST_NOT;
-            }
-            else if (currentChar == '<')
-            {
+            } else if (currentChar == '<') {
                 state = FIRST_LT;
-            }
-            else if (currentChar == '>')
-            {
+            } else if (currentChar == '>') {
                 state = FIRST_GT;
-            }
-            else if (currentChar == '_')
-            {
+            } else if (currentChar == '_') {
                 state = UNDERSCORE;
-            }
-            else if (currentChar == '#')
-            {
+            } else if (currentChar == '#') {
                 state = HASHTAG;
-            }
-            else if (currentChar == '%')
-            {
+            } else if (currentChar == '%') {
                 state = PERCENT;
                 token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
-            }
-            else if (currentChar == '\n')
-            {
+            } else if (currentChar == '\n') {
                 ++(B->line);
                 state = START;
                 token_to_return->lexeme[--(token_to_return->lexemeLength)] = '\0';
-            }
-            else if (currentChar >= 'b' && currentChar <= 'd')
-            {
+            } else if (currentChar >= 'b' && currentChar <= 'd') {
                 state = FIRST_ID;
-            }
-            else if (currentChar == 'a' || (currentChar >= 'e' && currentChar <= 'z'))
-            {
+            } else if (currentChar == 'a' || (currentChar >= 'e' && currentChar <= 'z')) {
                 state = FIELD_ID;
-            }
-            else if (currentChar >= '0' && currentChar <= '9')
-            {
+            } else if (currentChar >= '0' && currentChar <= '9') {
                 state = FIRST_DIGIT;
-            }
-            else
-            {
-                if (currentChar != -1)
-                {
+            } else {
+                if (currentChar != -1) {
                     fprintf(stderr, "Line %d\n\tUnexpected character: %c\n\n", B->line, currentChar);
                     (token_to_return->lexeme)[token_to_return->lexemeLength] = '\0';
                     token_to_return->token = ERROR;
@@ -198,12 +143,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_AND:
-            if (currentChar == '&')
-            {
+            if (currentChar == '&') {
                 state = SECOND_AND;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -214,12 +156,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_OR:
-            if (currentChar == '@')
-            {
+            if (currentChar == '@') {
                 state = SECOND_OR;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -230,13 +169,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_EQ:
-            if (currentChar == '=')
-            {
+            if (currentChar == '=') {
                 token_to_return->token = TK_EQ;
                 return token_to_return;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -247,13 +183,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_NOT:
-            if (currentChar == '=')
-            {
+            if (currentChar == '=') {
                 token_to_return->token = TK_NE;
                 return token_to_return;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -264,17 +197,12 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_LT:
-            if (currentChar == '=')
-            {
+            if (currentChar == '=') {
                 token_to_return->token = TK_LE;
                 return token_to_return;
-            }
-            else if (currentChar == '-')
-            {
+            } else if (currentChar == '-') {
                 state = LT_MINUS;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_LT;
@@ -284,13 +212,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_GT:
-            if (currentChar == '=')
-            {
+            if (currentChar == '=') {
                 token_to_return->token = TK_GE;
                 return token_to_return;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_GT;
@@ -300,12 +225,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case UNDERSCORE:
-            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z'))
-            {
+            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
                 state = UNDERSCORE_LETTER;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: lowercase/uppercase alphabet, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -316,12 +238,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case HASHTAG:
-            if (currentChar >= 'a' && currentChar <= 'z')
-            {
+            if (currentChar >= 'a' && currentChar <= 'z') {
                 state = HASHTAG_LETTER;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: lowercase alphabet, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -332,13 +251,10 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case PERCENT:
-            if (currentChar == '\n')
-            {
+            if (currentChar == '\n') {
                 ++(B->line);
                 state = START;
-            }
-            else
-            {
+            } else {
                 state = PERCENT;
             }
 
@@ -346,16 +262,11 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_ID:
-            if (currentChar >= 'a' && currentChar <= 'z')
-            {
+            if (currentChar >= 'a' && currentChar <= 'z') {
                 state = FIELD_ID;
-            }
-            else if (currentChar >= '2' && currentChar <= '7')
-            {
+            } else if (currentChar >= '2' && currentChar <= '7') {
                 state = SECOND_ID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FIELDID;
@@ -365,12 +276,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIELD_ID:
-            if (currentChar >= 'a' && currentChar <= 'z')
-            {
+            if (currentChar >= 'a' && currentChar <= 'z') {
                 state = FIELD_ID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FIELDID;
@@ -380,16 +288,11 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_DIGIT:
-            if (currentChar >= '0' && currentChar <= '9')
-            {
+            if (currentChar >= '0' && currentChar <= '9') {
                 state = FIRST_DIGIT;
-            }
-            else if (currentChar == '.')
-            {
+            } else if (currentChar == '.') {
                 state = DIGIT_DOT;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_NUM;
@@ -400,8 +303,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case SECOND_AND:
-            if (currentChar != '&')
-            {
+            if (currentChar != '&') {
                 fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -413,8 +315,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             return token_to_return;
 
         case SECOND_OR:
-            if (currentChar != '@')
-            {
+            if (currentChar != '@') {
                 fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -426,12 +327,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             return token_to_return;
 
         case LT_MINUS:
-            if (currentChar == '-')
-            {
+            if (currentChar == '-') {
                 state = ASSIGNOP;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= 1 + (currentChar != -1)] = '\0';
                 B->currentPos -= 1 + (currentChar != -1);
                 token_to_return->token = TK_LT;
@@ -441,16 +339,11 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case UNDERSCORE_LETTER:
-            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z'))
-            {
+            if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
                 state = UNDERSCORE_LETTER;
-            }
-            else if (currentChar >= '0' && currentChar <= '9')
-            {
+            } else if (currentChar >= '0' && currentChar <= '9') {
                 state = FUNID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FUNID;
@@ -460,12 +353,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case HASHTAG_LETTER:
-            if (currentChar >= 'a' && currentChar <= 'z')
-            {
+            if (currentChar >= 'a' && currentChar <= 'z') {
                 state = HASHTAG_LETTER;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_RUID;
@@ -475,16 +365,11 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case SECOND_ID:
-            if (currentChar >= 'b' && currentChar <= 'd')
-            {
+            if (currentChar >= 'b' && currentChar <= 'd') {
                 state = SECOND_ID;
-            }
-            else if (currentChar >= '2' && currentChar <= '7')
-            {
+            } else if (currentChar >= '2' && currentChar <= '7') {
                 state = NUMBER_ID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_ID;
@@ -494,12 +379,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case DIGIT_DOT:
-            if (currentChar >= '0' && currentChar <= '9')
-            {
+            if (currentChar >= '0' && currentChar <= '9') {
                 state = FIRST_FLDIG;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= 1 + (currentChar != -1)] = '\0';
                 B->currentPos -= 1 + (currentChar != -1);
                 token_to_return->token = TK_NUM;
@@ -510,8 +392,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case ASSIGNOP:
-            if (currentChar != '-')
-            {
+            if (currentChar != '-') {
                 fprintf(stderr, "Line %d\n\tExpected: '-', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -523,12 +404,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             return token_to_return;
 
         case FUNID:
-            if (currentChar >= '0' && currentChar <= '9')
-            {
+            if (currentChar >= '0' && currentChar <= '9') {
                 state = FUNID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_FUNID;
@@ -538,12 +416,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case NUMBER_ID:
-            if (currentChar >= '2' && currentChar <= '7')
-            {
+            if (currentChar >= '2' && currentChar <= '7') {
                 state = NUMBER_ID;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_ID;
@@ -553,12 +428,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FIRST_FLDIG:
-            if (currentChar >= '0' && currentChar <= '9')
-            {
+            if (currentChar >= '0' && currentChar <= '9') {
                 state = SECOND_FLDIG;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -569,12 +441,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case SECOND_FLDIG:
-            if (currentChar == 'E')
-            {
+            if (currentChar == 'E') {
                 state = FL_EXP;
-            }
-            else
-            {
+            } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = TK_RNUM;
@@ -585,16 +454,11 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FL_EXP:
-            if ((currentChar == '+') || (currentChar == '-'))
-            {
+            if ((currentChar == '+') || (currentChar == '-')) {
                 state = FL_EXP_SIGNED;
-            }
-            else if (currentChar >= '0' && currentChar <= '9')
-            {
+            } else if (currentChar >= '0' && currentChar <= '9') {
                 state = FL_EXP_COMPLETE;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: signed/unsigned exponent, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -605,12 +469,9 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FL_EXP_SIGNED:
-            if (currentChar >= '0' && currentChar <= '9')
-            {
+            if (currentChar >= '0' && currentChar <= '9') {
                 state = FL_EXP_COMPLETE;
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -621,8 +482,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
             break;
 
         case FL_EXP_COMPLETE:
-            if (currentChar < '0' || currentChar > '9')
-            {
+            if (currentChar < '0' || currentChar > '9') {
                 fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
@@ -642,36 +502,30 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt)
     return NULL;
 }
 
-void removeComments(char *testcaseFile, char *cleanFile)
-{
+void removeComments(char *testcaseFile, char *cleanFile) {
     FILE *inputFile = fopen(testcaseFile, "r");
-    if (inputFile == NULL)
-    {
+    if (inputFile == NULL) {
         printf("Error opening input file\n");
         return;
     }
 
     FILE *outputFile = fopen(cleanFile, "w");
-    if (outputFile == NULL)
-    {
+    if (outputFile == NULL) {
         printf("Error opening output file\n");
         return;
     }
 
     char line[2048];
-    while (fgets(line, sizeof(line), inputFile))
-    {
+    while (fgets(line, sizeof(line), inputFile)) {
         char *commentStart = strchr(line, '%');
-        if (commentStart != NULL)
-        {
+        if (commentStart != NULL) {
             *commentStart = '\0'; // Terminate the line at the start of the comment
         }
         if (line[0] == '\0')
             continue;
         // Remove trailing newline character if present
         size_t lineLength = strlen(line);
-        if (lineLength > 0 && line[lineLength - 1] == '\n')
-        {
+        if (lineLength > 0 && line[lineLength - 1] == '\n') {
             line[lineLength - 1] = '\0';
         }
         fprintf(outputFile, "%s\n", line);

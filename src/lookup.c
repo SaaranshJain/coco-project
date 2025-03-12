@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-LookupTableNode create_node(char *lexeme, enum TOKEN_TYPE token, int line)
-{
+LookupTableNode create_node(char *lexeme, enum TOKEN_TYPE token, int line) {
     LookupTableNode newnode = (LookupTableNode)malloc(sizeof(struct lookupTableNode));
     newnode->lexeme = lexeme;
     newnode->defined_at_line = line;
@@ -12,8 +11,7 @@ LookupTableNode create_node(char *lexeme, enum TOKEN_TYPE token, int line)
     return newnode;
 }
 
-LookupTable create_lookup_table()
-{
+LookupTable create_lookup_table() {
     LookupTable lt = (LookupTable)malloc(sizeof(struct lookupTable));
     lt->size = 0;
     lt->capacity = 100;
@@ -22,12 +20,10 @@ LookupTable create_lookup_table()
     return lt;
 }
 
-int hash(LookupTable lt, char *lexeme, int lexemeLength)
-{
+int hash(LookupTable lt, char *lexeme, int lexemeLength) {
     int bucketIndex;
     int sum = 0, factor = 31;
-    for (int i = 0; i < lexemeLength; i++)
-    {
+    for (int i = 0; i < lexemeLength; i++) {
         sum = ((sum % lt->capacity) + (((int)lexeme[i]) * factor) % lt->capacity) % lt->capacity;
         factor = ((factor % 0x7fff) * (31 % 0x7fff)) % 0x7fff;
     }
@@ -36,34 +32,28 @@ int hash(LookupTable lt, char *lexeme, int lexemeLength)
     return bucketIndex;
 }
 
-void insert(LookupTable lt, char *lexeme, int lexemeLength, enum TOKEN_TYPE token, int line)
-{
+void insert(LookupTable lt, char *lexeme, int lexemeLength, enum TOKEN_TYPE token, int line) {
     int bucketIndex = hash(lt, lexeme, lexemeLength);
     LookupTableNode newnode = create_node(lexeme, token, line);
 
-    if (lt->nodes[bucketIndex] == NULL)
-    {
+    if (lt->nodes[bucketIndex] == NULL) {
         lt->nodes[bucketIndex] = newnode;
-    }
-    else
-    {
+    } else {
         newnode->next = lt->nodes[bucketIndex];
         lt->nodes[bucketIndex] = newnode;
     }
 }
 
-void del(LookupTable lt, char *lexeme, int lexemeLength)
-{
+void del(LookupTable lt, char *lexeme, int lexemeLength) {
     int bucketIndex = hash(lt, lexeme, lexemeLength);
     LookupTableNode prevNode = NULL;
     LookupTableNode currNode = lt->nodes[bucketIndex];
- 
+
     while (currNode != NULL) {
         if (strcmp(lexeme, currNode->lexeme) == 0) {
             if (currNode == lt->nodes[bucketIndex]) {
                 lt->nodes[bucketIndex] = currNode->next;
-            }
-            else {
+            } else {
                 prevNode->next = currNode->next;
             }
 
@@ -78,15 +68,12 @@ void del(LookupTable lt, char *lexeme, int lexemeLength)
     return;
 }
 
-LookupTableNode search(LookupTable lt, char *lexeme, int lexemeLength)
-{
+LookupTableNode search(LookupTable lt, char *lexeme, int lexemeLength) {
     int bucketIndex = hash(lt, lexeme, lexemeLength);
     LookupTableNode currNode = lt->nodes[bucketIndex];
 
-    while (currNode != NULL)
-    {
-        if (strcmp(lexeme, currNode->lexeme) == 0)
-        {
+    while (currNode != NULL) {
+        if (strcmp(lexeme, currNode->lexeme) == 0) {
             return currNode;
         }
 

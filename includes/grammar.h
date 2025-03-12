@@ -301,6 +301,4 @@ struct rule _rule94 = {.lhs = NT_A, .rhs = _rhs94, .rhsLength = 1};
 
 Rule _grammarRules[] = {&_rule0, &_rule1, &_rule2, &_rule3, &_rule4, &_rule5, &_rule6, &_rule7, &_rule8, &_rule9, &_rule10, &_rule11, &_rule12, &_rule13, &_rule14, &_rule15, &_rule16, &_rule17, &_rule18, &_rule19, &_rule20, &_rule21, &_rule22, &_rule23, &_rule24, &_rule25, &_rule26, &_rule27, &_rule28, &_rule29, &_rule30, &_rule31, &_rule32, &_rule33, &_rule34, &_rule35, &_rule36, &_rule37, &_rule38, &_rule39, &_rule40, &_rule41, &_rule42, &_rule43, &_rule44, &_rule45, &_rule46, &_rule47, &_rule48, &_rule49, &_rule50, &_rule51, &_rule52, &_rule53, &_rule54, &_rule55, &_rule56, &_rule57, &_rule58, &_rule59, &_rule60, &_rule61, &_rule62, &_rule63, &_rule64, &_rule65, &_rule66, &_rule67, &_rule68, &_rule69, &_rule70, &_rule71, &_rule72, &_rule73, &_rule74, &_rule75, &_rule76, &_rule77, &_rule78, &_rule79, &_rule80, &_rule81, &_rule82, &_rule83, &_rule84, &_rule85, &_rule86, &_rule87, &_rule88, &_rule89, &_rule90, &_rule91, &_rule92, &_rule93, &_rule94, };
 struct grammar languageGrammar = {NT_Program, 95, _grammarRules};
-#define NUM_NON_TERMINALS 107
-#define NUM_RULES 95
 #endif

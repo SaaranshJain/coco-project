@@ -2,10 +2,11 @@
 #define PARSERDEF_H
 
 #include "lexerDef.h"
+#define NUM_NON_TERMINALS 54
 
 enum NON_TERMINAL
 {
-    NT_Program = 37,
+    NT_Program = NUM_TERMINALS,
     NT_MainFunction,
     NT_OtherFunctions,
     NT_Function,
@@ -104,7 +105,7 @@ struct firstAndFollow
 };
 
 typedef struct firstAndFollow* FirstAndFollow;
-typedef Rule* Table;
+typedef Rule* ParseTable;
 
 struct parseTreeNode
 {
