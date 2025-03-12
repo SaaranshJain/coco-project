@@ -75,8 +75,6 @@ FirstAndFollow *ComputeFirstAndFollowSets(Grammar G) {
 }
 
 void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
-    int NON_TERMINAL_OFFSET = NUM_TERMINALS; // First non-terminal index
-
     // init table
     for (int i = 0; i < NUM_NON_TERMINALS; i++) {
         for (int j = 0; j < NUM_TERMINALS; j++) {
@@ -86,7 +84,7 @@ void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
 
     for (int i = 0; i < G->numRules; i++) {
         Rule rule = G->rules[i];
-        int row_index = rule->lhs - NON_TERMINAL_OFFSET; // Normalize non-terminal index
+        int row_index = rule->lhs - NUM_TERMINALS; // Normalize non-terminal index
 
         // first set
         for (int j = 0; j < F[row_index]->firstSetSize; j++) {
