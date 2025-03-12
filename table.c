@@ -22,7 +22,8 @@ int computeTokenCount (FirstAndFollow* F) {
 
 void createParseTable (FirstAndFollow* F, Table T, Grammar G) {
     int TOKEN_COUNT = computeTokenCount(F);
-
+    int TOKEN_DOLLAR_INDEX = TOKEN_COUNT - 1;
+    
     // init empty table
     for (int i = 0; i < NT_A; i++) {
         for (int j = 0; j < TOKEN_COUNT; j++) {
@@ -47,7 +48,7 @@ void createParseTable (FirstAndFollow* F, Table T, Grammar G) {
             }
             
             if (F[lhs]->followSetDollar) {
-                T[lhs * TOKEN_COUNT - 1] = rule;
+                T[lhs * TOKEN_COUNT + TOKEN_DOLLAR_INDEX] = rule;
             }
         }
     }
