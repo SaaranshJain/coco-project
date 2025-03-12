@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "lexer.h"
 #include "parser.h"
+#include "grammar.h"
 
 FirstAndFollow* ComputeFirstAndFollowSets (Grammar G)
 {
