@@ -1,7 +1,7 @@
+#include "firstAndFollow.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "firstAndFollow.h"
 
 // Checks if a terminal is already present in a set
 bool isTerminalInSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE *set, int setSize) {

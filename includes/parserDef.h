@@ -2,7 +2,7 @@
 #define PARSERDEF_H
 
 #include "lexerDef.h"
-#define NUM_NON_TERMINALS 54
+#define NUM_NON_TERMINALS 52
 
 enum NON_TERMINAL
 {
@@ -48,8 +48,6 @@ enum NON_TERMINAL
     NT_Factor,
     NT_HighPrecedenceOperator,
     NT_LowPrecedenceOperator,
-    NT_BooleanExpression,
-    NT_BooleanExpression,
     NT_BooleanExpression,
     NT_Var,
     NT_LogicalOp,
