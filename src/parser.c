@@ -84,22 +84,19 @@ void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
 
     for (int i = 0; i < G->numRules; i++) {
         Rule rule = G->rules[i];
-        enum NON_TERMINAL lhs = rule->lhs;
+        int row_index = rule->lhs - NUM_TERMINALS; // Normalize non-terminal index
 
-        for (int j = 0; j < F[lhs]->firstSetSize; j++) {
-            enum TOKEN_TYPE terminal = F[lhs]->firstSet[j];
-            T[lhs * NUM_TERMINALS + terminal] = rule;
+        // first set
+        for (int j = 0; j < F[row_index]->firstSetSize; j++) {
+            enum TOKEN_TYPE terminal = F[row_index]->firstSet[j];
+            T[row_index * NUM_TERMINALS + terminal] = rule; 
         }
-
-        // Handle epsilon using follow
+        
+        // epsilon case using follow set
         if (rule->rhsLength == 1 && rule->rhs[0]->isEpsilon) {
-            for (int j = 0; j < F[lhs]->followSetSize; j++) {
-                enum TOKEN_TYPE terminal = F[lhs]->followSet[j];
-                T[lhs * NUM_TERMINALS + terminal] = rule;
-            }
-
-            if (F[lhs]->followSetDollar) {
-                T[lhs * NUM_TERMINALS + TK_DOLLAR] = rule;
+            for (int j = 0; j < F[row_index]->followSetSize; j++) {
+                enum TOKEN_TYPE terminal = F[row_index]->followSet[j];
+                T[row_index * NUM_TERMINALS + terminal] = rule;
             }
         }
     }
