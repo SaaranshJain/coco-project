@@ -45,10 +45,10 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
 
         while (firstOfThisRule > 0) {
             if (firstOfThisRule % 2 == 1) {
-                T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + (j++)] = rule;
+                T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + j] = rule;
             }
 
-            firstOfThisRule >>= 1;
+            firstOfThisRule >>= 1; j++;
         }
     }
 
@@ -112,7 +112,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
             
             if (tableEntry == NULL) {
                 // ERROR
-                fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
+                // fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
                 continue;
             }
 
