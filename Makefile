@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11
 TARGET = compiler
 SRC_FOLDER = src
-SRCS = $(SRC_FOLDER)/driver.c $(SRC_FOLDER)/lexer.c $(SRC_FOLDER)/lookup.c
+SRCS = $(SRC_FOLDER)/driver.c $(SRC_FOLDER)/lexer.c $(SRC_FOLDER)/lookup.c $(SRC_FOLDER)/parser.c $(SRC_FOLDER)/firstAndFollow.c
 INCLUDES = includes
 
 all: $(TARGET)
