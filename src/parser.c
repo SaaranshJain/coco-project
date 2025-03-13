@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "grammar.h"
 #include "lexer.h"
+#include "lookup.h"
 #include "firstAndFollow.h"
 #include <stdlib.h>
 
@@ -103,13 +104,13 @@ void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G) {
 }
 
 ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T) {
-    FILE *testcasefile = fopen(testcaseFileName, "r");
-    TwinBuffer buffer = getStream(testcasefile);
-    TokenInfo token;
-    LookupTable lt = create_lookup_table();
+    // FILE *testcasefile = fopen(testcaseFileName, "r");
+    // TwinBuffer buffer = getStream(testcasefile);
+    // TokenInfo token;
+    // LookupTable lt = create_lookup_table();
 
-    while ((token = getNextToken(buffer, lt)) != NULL) {
-    }
+    // while ((token = getNextToken(buffer, lt)) != NULL) {
+    // }
 }
 
 void printParseTree(ParseTree PT, char *outfile) {
