@@ -1,8 +1,10 @@
+#include "grammar.h"
 #include "lexer.h"
 #include "lookup.h"
+#include "parser.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
-// #include "parser.h"
 
 int main(int argc, char *argv[]) {
     // printf("Implementation status: Comment cleaning implemented\n");
@@ -81,7 +83,17 @@ int main(int argc, char *argv[]) {
 
             break;
         case 3:
+            if (argc < 3) {
+                printf("Usage: %s <testcase file> <output file>\n", argv[0]);
+                return 1;
+            }
+
             printf("Generating parse tree\n");
+            FirstAndFollow *F = (FirstAndFollow *)malloc(NUM_NON_TERMINALS * sizeof(FirstAndFollow));
+            uint64_t *memo = computeFirstAndFollowSets(F, &languageGrammar);
+            ParseTable T = createParseTable(F, &languageGrammar, memo);
+            ParseTree tree = parseInputSourceCode(argv[1], T, &languageGrammar);
+            printParseTree(tree, argv[2]);
             break;
         default:
             printf("Invalid input\n");

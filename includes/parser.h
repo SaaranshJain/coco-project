@@ -3,9 +3,9 @@
 
 #include "parserDef.h"
 
-FirstAndFollow *ComputeFirstAndFollowSets(Grammar G);
-void createParseTable(FirstAndFollow *F, ParseTable T, Grammar G);
-ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T);
+uint64_t *computeFirstAndFollowSets(FirstAndFollow *F, Grammar G);
+ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t* memo);
+ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G);
 void printParseTree(ParseTree PT, char *outfile);
 
 #endif

@@ -3,9 +3,9 @@
 
 #include "parserDef.h"
 
-bool isTerminalInSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE *set, int setSize);
-int addTerminalToSet(enum TOKEN_TYPE terminal, enum TOKEN_TYPE **set, int *setSize, int *capacity);
-void computeFirstSet(Grammar G, FirstAndFollow *firstAndFollowSets, enum NON_TERMINAL nonTerminal);
-void computeFollowSet(Grammar G, FirstAndFollow *firstAndFollowSets, enum NON_TERMINAL nonTerminal);
+uint64_t firstSetOfRule(int ruleind, Grammar G, uint64_t* memo);
+uint64_t* computeFirstSets(FirstAndFollow* ff, Grammar G);
+uint64_t followSetOfNT(FirstAndFollow* ff, Grammar G, enum NON_TERMINAL nt);
+void computeFollowSets(FirstAndFollow* ff, Grammar G);
 
 #endif

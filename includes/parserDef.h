@@ -2,124 +2,119 @@
 #define PARSERDEF_H
 
 #include "lexerDef.h"
+#include <stdint.h>
 #define NUM_NON_TERMINALS 52
 
-enum NON_TERMINAL
-{
-    NT_Program = NUM_TERMINALS,
-    NT_MainFunction,
-    NT_OtherFunctions,
-    NT_Function,
-    NT_InputPar,
-    NT_OutputPar,
-    NT_ParameterList,
-    NT_DataType,
-    NT_PrimitiveDatatype,
-    NT_ConstructedDatatype,
-    NT_RemainingList,
-    NT_Stmts,
-    NT_TypeDefinitions,
-    NT_ActualOrRedefined,
-    NT_TypeDefinition,
-    NT_FieldDefinitions,
-    NT_FieldDefinition,
-    NT_MoreFields,
-    NT_Declarations,
-    NT_Declaration,
-    NT_GlobalOrNot,
-    NT_OtherStmts,
-    NT_Stmt,
-    NT_AssignmentStmt,
-    NT_SingleOrRecId,
-    NT_OptionSingleConstructed,
-    NT_OneExpansion,
-    NT_MoreExpansions,
-    NT_FunCallStmt,
-    NT_OutputParameters,
-    NT_InputParameters,
-    NT_IterativeStmt,
-    NT_ConditionalStmt,
-    NT_ElsePart,
-    NT_IoStmt,
-    NT_ArithmeticExpression,
-    NT_MoreTerms,
-    NT_Term,
-    NT_MoreFactors,
-    NT_Factor,
-    NT_HighPrecedenceOperator,
-    NT_LowPrecedenceOperator,
-    NT_BooleanExpression,
-    NT_Var,
-    NT_LogicalOp,
-    NT_RelationalOp,
-    NT_ReturnStmt,
-    NT_OptionalReturn,
-    NT_IdList,
-    NT_MoreIds,
-    NT_DefinetypeStmt,
+enum NON_TERMINAL {
+    NT_PROGRAM = NUM_TERMINALS,
+    NT_MAINFUNCTION,
+    NT_OTHERFUNCTIONS,
+    NT_FUNCTION,
+    NT_INPUTPAR,
+    NT_OUTPUTPAR,
+    NT_PARAMETERLIST,
+    NT_DATATYPE,
+    NT_PRIMITIVEDATATYPE,
+    NT_CONSTRUCTEDDATATYPE,
+    NT_REMAININGLIST,
+    NT_STMTS,
+    NT_TYPEDEFINITIONS,
+    NT_ACTUALORREDEFINED,
+    NT_TYPEDEFINITION,
+    NT_FIELDDEFINITIONS,
+    NT_FIELDDEFINITION,
+    NT_MOREFIELDS,
+    NT_DECLARATIONS,
+    NT_DECLARATION,
+    NT_GLOBALORNOT,
+    NT_OTHERSTMTS,
+    NT_STMT,
+    NT_ASSIGNMENTSTMT,
+    NT_SINGLEORRECID,
+    NT_OPTIONSINGLECONSTRUCTED,
+    NT_ONEEXPANSION,
+    NT_MOREEXPANSIONS,
+    NT_FUNCALLSTMT,
+    NT_OUTPUTPARAMETERS,
+    NT_INPUTPARAMETERS,
+    NT_ITERATIVESTMT,
+    NT_CONDITIONALSTMT,
+    NT_ELSEPART,
+    NT_IOSTMT,
+    NT_ARITHMETICEXPRESSION,
+    NT_MORETERMS,
+    NT_TERM,
+    NT_MOREFACTORS,
+    NT_FACTOR,
+    NT_HIGHPRECEDENCEOPERATOR,
+    NT_LOWPRECEDENCEOPERATOR,
+    NT_BOOLEANEXPRESSION,
+    NT_VAR,
+    NT_LOGICALOP,
+    NT_RELATIONALOP,
+    NT_RETURNSTMT,
+    NT_OPTIONALRETURN,
+    NT_IDLIST,
+    NT_MOREIDS,
+    NT_DEFINETYPESTMT,
     NT_A,
 };
 
-struct ruleRightSideElement
-{
-    bool isEpsilon;
+struct ruleRightSideElement {
     bool isTerminal;
-    union symbol
-    {
+    union symbol {
         enum TOKEN_TYPE terminal;
         enum NON_TERMINAL nonTerminal;
     } symbol;
 };
 
-typedef struct ruleRightSideElement* RuleRightSideElement;
+typedef struct ruleRightSideElement *RuleRightSideElement;
 
-struct rule
-{
+struct rule {
     enum NON_TERMINAL lhs;
     int rhsLength;
-    RuleRightSideElement* rhs;
+    RuleRightSideElement *rhs;
+    bool isEpsilon;
 };
 
-typedef struct rule* Rule;
+typedef struct rule *Rule;
 
-struct grammar
-{
+struct grammar {
     enum NON_TERMINAL startSymbol;
     int numRules;
-    Rule* rules;
+    Rule *rules;
 };
 
-typedef struct grammar* Grammar;
+typedef struct grammar *Grammar;
 
-struct firstAndFollow
-{
-    enum NON_TERMINAL nonTerminal;
-    int firstSetSize;
-    enum TOKEN_TYPE* firstSet;
-    bool firstSetEpsilon;
-    int followSetSize;
-    enum TOKEN_TYPE* followSet;
-    bool followSetDollar;
+struct firstAndFollow {
+    // enum NON_TERMINAL nonTerminal;
+    // int firstSetSize;
+    uint64_t firstSet;
+    // bool firstSetEpsilon;
+    // int followSetSize;
+    uint64_t followSet;
+    // bool followSetDollar;
 };
 
-typedef struct firstAndFollow* FirstAndFollow;
-typedef Rule* ParseTable;
+typedef struct firstAndFollow *FirstAndFollow;
+typedef Rule *ParseTable;
 
-struct parseTreeNode
-{
+struct parseTreeNode {
     enum TOKEN_TYPE token;
     enum NON_TERMINAL nonTerminal;
-    char* lexeme;
-    struct parseTreeNode* parent;
-    struct parseTreeNode** children;
+    char *lexeme;
+    struct parseTreeNode *parent;
+    struct parseTreeNode **children;
     int numChildren;
 };
 
-struct parseTree
-{
-    struct parseTreeNode* root;
+typedef struct parseTreeNode *ParseTreeNode;
+
+struct parseTree {
+    ParseTreeNode root;
 };
 
-typedef struct parseTree* ParseTree;
+typedef struct parseTree *ParseTree;
 
 #endif
