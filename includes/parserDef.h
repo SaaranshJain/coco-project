@@ -95,9 +95,11 @@ struct firstAndFollow
 {
     enum NON_TERMINAL nonTerminal;
     int firstSetSize;
+    int firstSetCapacity;
     enum TOKEN_TYPE* firstSet;
     bool firstSetEpsilon;
     int followSetSize;
+    int followSetCapacity;
     enum TOKEN_TYPE* followSet;
     bool followSetDollar;
 };
