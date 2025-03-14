@@ -27,16 +27,16 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
         Rule rule = G->rules[i];
         uint64_t firstOfThisRule = memo[i];
 
-        if (firstOfThisRule % 2 == 1) {
+        if (firstOfThisRule & 1) {
             uint64_t followSetOfThisNT = F[rule->lhs - NUM_TERMINALS]->followSet;
             int j = 0;
 
             while (followSetOfThisNT > 0) {
-                if (followSetOfThisNT % 2 == 1) {
-                    T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + (j++)] = rule;
+                if (followSetOfThisNT & 1) {
+                    T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + j] = rule;
                 }
 
-                followSetOfThisNT >>= 1;
+                followSetOfThisNT >>= 1; j++;
             }
         }
 
@@ -44,7 +44,7 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
         int j = 1;
 
         while (firstOfThisRule > 0) {
-            if (firstOfThisRule % 2 == 1) {
+            if (firstOfThisRule & 1) {
                 T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + j] = rule;
             }
 
@@ -112,7 +112,12 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
             
             if (tableEntry == NULL) {
                 // ERROR
-                // fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
+                fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
+                break;
+            }
+
+            if (tableEntry->isEpsilon) {
+                top--;
                 continue;
             }
 
@@ -143,7 +148,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     }
 
     if (top != 0) {
-        fprintf(stderr, "Token stream ended before all elements from stack got popped\n");
+        fprintf(stderr, "Token stream ended before all elements from stack got popped. Top = %d\n", top);
     }
 
     return tree;
@@ -164,4 +169,5 @@ void preorder(ParseTreeNode node, FILE* outfile) {
 void printParseTree(ParseTree PT, char *outfile) {
     FILE* of = fopen(outfile, "w");
     preorder(PT->root, of);
+    fclose(of);
 }

@@ -10,3 +10,6 @@ compiler
 
 # MacOS
 .DS_Store
+
+# Temporary testing scripts
+includes/test.py

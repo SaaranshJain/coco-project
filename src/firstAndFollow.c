@@ -6,7 +6,7 @@
 uint64_t firstSetOfRule(int ruleind, Grammar G, uint64_t *memo) {
     Rule rule = G->rules[ruleind];
 
-    if (rule->isEpsilon) return 1;
+    if (rule->isEpsilon) return memo[ruleind] = 1;
     if (memo[ruleind] != 0) return memo[ruleind];
 
     uint64_t fs = 0;
@@ -17,9 +17,9 @@ uint64_t firstSetOfRule(int ruleind, Grammar G, uint64_t *memo) {
     for (int i = 0; i < rule->rhsLength; ++i) {
         uint64_t temp = 0;
         if (rhs[i]->isTerminal) {
-            temp |= (1 << rhs[i]->symbol.terminal);
+            temp |= (1UL << rhs[i]->symbol.terminal);
             isEps = false;
-            fs |= (temp >> 1) << 1;
+            fs |= temp;
             break;
         }
 
@@ -29,26 +29,34 @@ uint64_t firstSetOfRule(int ruleind, Grammar G, uint64_t *memo) {
             }
         }
 
-        isEps = isEps && (temp % 2 == 1);
-        fs |= (temp >> 1) << 1;
+        isEps = isEps && (temp & 1);
+        fs |= temp;
 
-        if (temp % 2 == 0) {
+        if (!isEps) {
             break;
         }
     }
 
     if (isEps) {
         fs = fs | 1;
+    } else {
+        fs = fs & (((1UL << 63) - 1) << 1);
     }
 
     return memo[ruleind] = fs;
 }
 
 uint64_t *computeFirstSets(FirstAndFollow *ff, Grammar G) {
-    uint64_t *memo = (uint64_t *)calloc(G->numRules, sizeof(uint16_t));
+    uint64_t *memo = (uint64_t *)calloc(G->numRules, sizeof(uint64_t));
 
-    for (int i = 0; i < G->numRules; ++i) {
-        ff[G->rules[i]->lhs - NUM_TERMINALS]->firstSet |= firstSetOfRule(i, G, memo);
+    for (int i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
+        for (int j = 0; j < G->numRules; ++j) {
+            if (G->rules[j]->lhs == i) {
+                ff[i - NUM_TERMINALS]->firstSet |= firstSetOfRule(j, G, memo);
+            }
+        }
+
+        printf("%lu,\n", ff[i - NUM_TERMINALS]->firstSet);
     }
 
     return memo;
@@ -57,11 +65,11 @@ uint64_t *computeFirstSets(FirstAndFollow *ff, Grammar G) {
 uint64_t followSetOfNT(FirstAndFollow *ff, Grammar G, enum NON_TERMINAL nt) {
     int ffind = nt - NUM_TERMINALS;
 
-    if (ff[nt - NUM_TERMINALS]->followSet != 0)
-        return ff[nt - NUM_TERMINALS]->followSet;
+    if (ff[ffind]->followSet != 0)
+        return ff[ffind]->followSet;
 
     if (nt == G->startSymbol) {
-        ff[nt - NUM_TERMINALS]->followSet = 1;
+        ff[ffind]->followSet = 1;
     }
 
     for (int i = 0; i < G->numRules; ++i) {
@@ -77,12 +85,13 @@ uint64_t followSetOfNT(FirstAndFollow *ff, Grammar G, enum NON_TERMINAL nt) {
 
             for (int k = j + 1; k < rule->rhsLength; ++k) {
                 if (rule->rhs[k]->isTerminal) {
-                    firstSetOfRemaining |= (1 << rule->rhs[k]->symbol.terminal);
+                    firstSetOfRemaining |= (1UL << rule->rhs[k]->symbol.terminal);
+                    isEps = false;
                     break;
                 }
 
-                firstSetOfRemaining |= 2 * (ff[ffind]->firstSet / 2);
-                isEps = isEps && (ff[ffind]->firstSet % 2 == 1);
+                firstSetOfRemaining |= (ff[rule->rhs[k]->symbol.nonTerminal - NUM_TERMINALS]->firstSet >> 1) << 1;
+                isEps = isEps && (ff[rule->rhs[k]->symbol.nonTerminal - NUM_TERMINALS]->firstSet & 1);
 
                 if (!isEps) {
                     break;
@@ -103,5 +112,6 @@ uint64_t followSetOfNT(FirstAndFollow *ff, Grammar G, enum NON_TERMINAL nt) {
 void computeFollowSets(FirstAndFollow *ff, Grammar G) {
     for (int i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
         followSetOfNT(ff, G, i);
+        // printf("Follow set of %i = %lu\n", i, followSetOfNT(ff, G, i));
     }
 }

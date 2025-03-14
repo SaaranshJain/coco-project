@@ -28,7 +28,8 @@ struct ruleRightSideElement _parameterList = {false, .symbol.nonTerminal = NT_PA
 struct ruleRightSideElement _tk_sqr = {true, .symbol.terminal = TK_SQR};
 RuleRightSideElement _rhs5[] = {&_tk_input, &_tk_parameter, &_tk_list, &_tk_sql, &_parameterList, &_tk_sqr, };
 struct rule _rule5 = {.lhs = NT_INPUTPAR, .rhs = _rhs5, .isEpsilon = false, .rhsLength = 6};
-RuleRightSideElement _rhs6[] = {&_tk_input, &_tk_parameter, &_tk_list, &_tk_sql, &_parameterList, &_tk_sqr, };
+struct ruleRightSideElement _tk_output = {true, .symbol.terminal = TK_OUTPUT};
+RuleRightSideElement _rhs6[] = {&_tk_output, &_tk_parameter, &_tk_list, &_tk_sql, &_parameterList, &_tk_sqr, };
 struct rule _rule6 = {.lhs = NT_OUTPUTPAR, .rhs = _rhs6, .isEpsilon = false, .rhsLength = 6};
 struct rule _rule7 = {.lhs = NT_OUTPUTPAR, .isEpsilon = true};
 struct ruleRightSideElement _dataType = {false, .symbol.nonTerminal = NT_DATATYPE};

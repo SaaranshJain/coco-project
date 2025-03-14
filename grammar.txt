@@ -3,7 +3,7 @@
 <otherFunctions> --> <function> <otherFunctions> | eps
 <function> --> TK_FUNID <inputPar> <outputPar> TK_SEM <stmts> TK_END
 <inputPar> --> TK_INPUT TK_PARAMETER TK_LIST TK_SQL <parameterList> TK_SQR
-<outputPar> --> TK_INPUT TK_PARAMETER TK_LIST TK_SQL <parameterList> TK_SQR | eps
+<outputPar> --> TK_OUTPUT TK_PARAMETER TK_LIST TK_SQL <parameterList> TK_SQR | eps
 <parameterList> --> <dataType> TK_ID <remainingList>
 <dataType> --> <primitiveDatatype> | <constructedDatatype>
 <primitiveDatatype> --> TK_INT | TK_REAL
