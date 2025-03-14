@@ -33,7 +33,7 @@
 <conditionalStmt> --> TK_IF TK_OP <booleanExpression> TK_CL TK_THEN <stmt> <otherStmts> <elsePart> TK_ENDIF
 <elsePart> --> TK_ELSE <stmt> <otherStmts> | eps
 <ioStmt> --> TK_READ TK_OP <var> TK_CL TK_SEM | TK_WRITE TK_OP <var> TK_CL TK_SEM
-<arithmeticExpression> --> <term> <moreTerms> | TK_OP <arithmeticExpression> TK_CL | <var>
+<arithmeticExpression> --> <term> <moreTerms>
 <moreTerms> --> <lowPrecedenceOperator> <term> <moreTerms> | eps
 <term> --> <factor> <moreFactors>
 <moreFactors> --> <highPrecedenceOperator> <factor> <moreFactors> | eps

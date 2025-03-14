@@ -1,5 +1,5 @@
 # NOTE: This file is not part of the final compiler. It is used to parse the grammar rules written in a simple format and convert them into a C header file.
-HEADER_FILE = "includes/grammar.h"
+HEADER_FILE = "grammar.h"
 SOURCE_GRAMMAR_FILE = "grammar.txt"
 
 def parseGrammar():
