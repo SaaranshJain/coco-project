@@ -1,3 +1,10 @@
+/*
+    Group number 1
+    Saaransh Jain - 2022A7PS0074P
+    Aman Patel - 2022A7PS0152P
+    Vishnu Hari - 2022A7TS0094P
+    Parth Sudan - 2022A7PS0177P
+*/
 #include "lookup.h"
 #include <stdlib.h>
 #include <string.h>

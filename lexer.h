@@ -1,3 +1,10 @@
+/*
+    Group number 1
+    Saaransh Jain - 2022A7PS0074P
+    Aman Patel - 2022A7PS0152P
+    Vishnu Hari - 2022A7TS0094P
+    Parth Sudan - 2022A7PS0177P
+*/
 #ifndef LEXER_H
 #define LEXER_H
 

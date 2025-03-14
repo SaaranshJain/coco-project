@@ -1,3 +1,10 @@
+/*
+    Group number 1
+    Saaransh Jain - 2022A7PS0074P
+    Aman Patel - 2022A7PS0152P
+    Vishnu Hari - 2022A7TS0094P
+    Parth Sudan - 2022A7PS0177P
+*/
 #ifndef PARSERDEF_H
 #define PARSERDEF_H
 
@@ -88,13 +95,8 @@ struct grammar {
 typedef struct grammar *Grammar;
 
 struct firstAndFollow {
-    // enum NON_TERMINAL nonTerminal;
-    // int firstSetSize;
     uint64_t firstSet;
-    // bool firstSetEpsilon;
-    // int followSetSize;
     uint64_t followSet;
-    // bool followSetDollar;
 };
 
 typedef struct firstAndFollow *FirstAndFollow;
@@ -102,6 +104,7 @@ typedef Rule *ParseTable;
 
 struct parseTreeNode {
     bool isTerminal;
+    int line;
     enum TOKEN_TYPE token;
     enum NON_TERMINAL nonTerminal;
     char *lexeme;
