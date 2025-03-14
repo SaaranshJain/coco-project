@@ -100,8 +100,6 @@ enum STATE {
     FL_EXP_COMPLETE
 };
 
-extern char *ENUM_NAME_FROM_VALUE[NUM_TERMINALS];
-
 struct tokenInfo {
     enum TOKEN_TYPE token;
     char *lexeme;

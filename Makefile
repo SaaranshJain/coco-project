@@ -1,14 +1,12 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11
-TARGET = compiler
-SRC_FOLDER = src
-SRCS = $(SRC_FOLDER)/driver.c $(SRC_FOLDER)/lexer.c $(SRC_FOLDER)/lookup.c $(SRC_FOLDER)/parser.c $(SRC_FOLDER)/firstAndFollow.c
-INCLUDES = includes
+TARGET = stage1exe
+SRCS = driver.c lexer.c lookup.c parser.c firstAndFollow.c
 
 all: $(TARGET)
 
 $(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) -I$(INCLUDES)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
 
 clean:
 	rm -f $(TARGET) *.o

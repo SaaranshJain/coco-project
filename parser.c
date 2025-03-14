@@ -4,6 +4,22 @@
 #include "lookup.h"
 #include <stdlib.h>
 
+char *NONTERMINAL_NAME_FROM_VALUE[NUM_NON_TERMINALS] = {
+    "NT_PROGRAM", "NT_MAINFUNCTION", "NT_OTHERFUNCTIONS", "NT_FUNCTION",
+    "NT_INPUTPAR", "NT_OUTPUTPAR", "NT_PARAMETERLIST", "NT_DATATYPE",
+    "NT_PRIMITIVEDATATYPE", "NT_CONSTRUCTEDDATATYPE", "NT_REMAININGLIST", "NT_STMTS",
+    "NT_TYPEDEFINITIONS", "NT_ACTUALORREDEFINED", "NT_TYPEDEFINITION", "NT_FIELDDEFINITIONS",
+    "NT_FIELDDEFINITION", "NT_MOREFIELDS", "NT_DECLARATIONS", "NT_DECLARATION",
+    "NT_GLOBALORNOT", "NT_OTHERSTMTS", "NT_STMT", "NT_ASSIGNMENTSTMT",
+    "NT_SINGLEORRECID", "NT_OPTIONSINGLECONSTRUCTED", "NT_ONEEXPANSION", "NT_MOREEXPANSIONS",
+    "NT_FUNCALLSTMT", "NT_OUTPUTPARAMETERS", "NT_INPUTPARAMETERS", "NT_ITERATIVESTMT",
+    "NT_CONDITIONALSTMT", "NT_ELSEPART", "NT_IOSTMT", "NT_ARITHMETICEXPRESSION",
+    "NT_MORETERMS", "NT_TERM", "NT_MOREFACTORS", "NT_FACTOR",
+    "NT_HIGHPRECEDENCEOPERATOR", "NT_LOWPRECEDENCEOPERATOR", "NT_BOOLEANEXPRESSION", "NT_VAR",
+    "NT_LOGICALOP", "NT_RELATIONALOP", "NT_RETURNSTMT","NT_OPTIONALRETURN",
+    "NT_IDLIST", "NT_MOREIDS", "NT_DEFINETYPESTMT", "NT_A",
+};
+
 uint64_t *computeFirstAndFollowSets(FirstAndFollow *F, Grammar G) {
     for (int i = 0; i < NUM_NON_TERMINALS; ++i) {
         F[i] = (FirstAndFollow)malloc(sizeof(struct firstAndFollow));
@@ -116,19 +132,23 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
                 currNode = stack[top];
             } else {
                 // ERROR
-                fprintf(stderr, "Stack top is a terminal %s, but it doesn't match the token stream terminal %s\n", ENUM_NAME_FROM_VALUE[stack[top]->token], ENUM_NAME_FROM_VALUE[token->token]);
+                fprintf(stderr, "Stack top is a terminal %s, but it doesn't match the token stream terminal %s\n", TOKEN_NAME_FROM_VALUE[stack[top]->token], TOKEN_NAME_FROM_VALUE[token->token]);
             }
         } else {
             Rule tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
 
             if (tableEntry == NULL) {
                 // ERROR
-                fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
+                fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, TOKEN_NAME_FROM_VALUE[token->token]);
                 break;
             }
 
             if (tableEntry->isEpsilon) {
                 top--;
+                currNode->numChildren = 1;
+                currNode->children = (ParseTreeNode *)malloc(sizeof(ParseTreeNode));
+                currNode->children[0] = newTnode(TK_DOLLAR, "eps", 0, 0.0);
+                currNode = stack[top];
                 continue;
             }
 
@@ -165,20 +185,26 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     return tree;
 }
 
-void preorder(ParseTreeNode node, FILE *outfile) {
+void inorder(ParseTreeNode node, FILE *outfile) {
+    if (node->numChildren > 0) inorder(node->children[0], outfile);
+
     if (node->isTerminal) {
-        fprintf(outfile, "(%s, %s)\n", ENUM_NAME_FROM_VALUE[node->token], node->lexeme);
+        if (node->token == TK_DOLLAR) {
+            fprintf(outfile, "eps\n");
+        } else {
+            fprintf(outfile, "(%s, %s)\n", TOKEN_NAME_FROM_VALUE[node->token], node->lexeme);
+        }
     } else {
-        fprintf(outfile, "%d\n", node->nonTerminal);
+        fprintf(outfile, "%s\n", NONTERMINAL_NAME_FROM_VALUE[node->nonTerminal - NUM_TERMINALS]);
     }
 
-    for (int i = 0; i < node->numChildren; ++i) {
-        preorder(node->children[i], outfile);
+    for (int i = 1; i < node->numChildren; ++i) {
+        inorder(node->children[i], outfile);
     }
 }
 
 void printParseTree(ParseTree PT, char *outfile) {
     FILE *of = fopen(outfile, "w");
-    preorder(PT->root, of);
+    inorder(PT->root, of);
     fclose(of);
 }

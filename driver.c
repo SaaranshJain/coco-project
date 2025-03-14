@@ -5,12 +5,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <time.h>
 
 int main(int argc, char *argv[]) {
     // printf("Implementation status: Comment cleaning implemented\n");
     // printf("Implementation status: Testing tokens\n");
-    printf("Implementation status: Testing parsing\n");
+    // printf("Implementation status: Testing parsing\n");
+    printf("Implementation status: Both lexical and syntax analysis modules implemented\n");
     printf("------------------------------------\n");
+
+    // Automatic computing of first set, follow set, parse table at the start of the program
+    FirstAndFollow *F = (FirstAndFollow *)malloc(NUM_NON_TERMINALS * sizeof(FirstAndFollow));
+    uint64_t *memo = computeFirstAndFollowSets(F, &languageGrammar);
+    ParseTable T = createParseTable(F, &languageGrammar, memo);
+    ParseTree tree;
 
     while (1) {
         printf("Choose an option:\n");
@@ -18,6 +26,7 @@ int main(int argc, char *argv[]) {
         printf("1. Remove Comments\n");
         printf("2. Print Tokens\n");
         printf("3. Generate Parse Tree\n");
+        printf("4. Measure time taken\n");
 
         int input;
         if (scanf("%d", &input) != 1) {
@@ -68,7 +77,7 @@ int main(int argc, char *argv[]) {
             LookupTable lt = create_lookup_table();
 
             while ((token = getNextToken(buffer, lt)) != NULL) {
-                printf("Token type: %s\n", ENUM_NAME_FROM_VALUE[token->token]);
+                printf("Token type: %s\n", TOKEN_NAME_FROM_VALUE[token->token]);
 
                 if (token->token == TK_NUM) {
                     printf("Lexeme: %d\n", token->lexemeI);
@@ -89,11 +98,23 @@ int main(int argc, char *argv[]) {
             }
 
             printf("Generating parse tree\n");
-            FirstAndFollow *F = (FirstAndFollow *)malloc(NUM_NON_TERMINALS * sizeof(FirstAndFollow));
-            uint64_t *memo = computeFirstAndFollowSets(F, &languageGrammar);
-            ParseTable T = createParseTable(F, &languageGrammar, memo);
-            ParseTree tree = parseInputSourceCode(argv[1], T, &languageGrammar);
+            tree = parseInputSourceCode(argv[1], T, &languageGrammar);
             printParseTree(tree, argv[2]);
+            break;
+        case 4:
+            if (argc < 2) {
+                printf("Usage: %s <testcase file>\n", argv[0]);
+                return 1;
+            }
+            
+            clock_t start_time, end_time;
+            double total_CPU_time, total_CPU_time_in_seconds;
+            start_time = clock();
+            tree = parseInputSourceCode(argv[1], T, &languageGrammar);
+            end_time = clock();
+            total_CPU_time = (double) (end_time - start_time);
+            total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
+            printf("Time taken for parser (which automatically calls lexer to generate tokens) is %lf seconds\n", total_CPU_time_in_seconds);
             break;
         default:
             printf("Invalid input\n");

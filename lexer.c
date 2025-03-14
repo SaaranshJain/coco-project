@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-char *ENUM_NAME_FROM_VALUE[NUM_TERMINALS] = {
+char *TOKEN_NAME_FROM_VALUE[NUM_TERMINALS] = {
     "TK_DOLLAR", "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID",
     "TK_ID", "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID",
     "TK_WITH", "TK_PARAMETERS", "TK_END", "TK_WHILE",

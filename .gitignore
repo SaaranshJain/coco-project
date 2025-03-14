@@ -3,7 +3,6 @@
 .clang-format
 
 # Build files
-compiler
 *exe
 *.o
 *.out
@@ -12,5 +11,4 @@ compiler
 .DS_Store
 
 # Testing and output
-includes/test.py
-trees/*
+test.py

@@ -3,6 +3,8 @@
 
 #include "parserDef.h"
 
+extern char *NONTERMINAL_NAME_FROM_VALUE[NUM_NON_TERMINALS];
+
 uint64_t *computeFirstAndFollowSets(FirstAndFollow *F, Grammar G);
 ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo);
 ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G);
