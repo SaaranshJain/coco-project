@@ -131,7 +131,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
                 state = FIRST_DIGIT;
             } else {
                 if (currentChar != -1) {
-                    fprintf(stderr, "Line %d\n\tUnexpected character: %c\n\n", B->line, currentChar);
+                    fprintf(stderr, "Line No %d : Error: Unknown Symbol <%c>\n", B->line, currentChar);
                     (token_to_return->lexeme)[token_to_return->lexemeLength] = '\0';
                     token_to_return->token = ERROR;
                     return token_to_return;
@@ -146,54 +146,54 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             if (currentChar == '&') {
                 state = SECOND_AND;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
             }
-
+            
             break;
-
+            
         case FIRST_OR:
             if (currentChar == '@') {
                 state = SECOND_OR;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
             }
 
             break;
-
+            
         case FIRST_EQ:
             if (currentChar == '=') {
                 token_to_return->token = TK_EQ;
                 return token_to_return;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown Symbol <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
             }
-
+            
             break;
-
+            
         case FIRST_NOT:
             if (currentChar == '=') {
                 token_to_return->token = TK_NE;
                 return token_to_return;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: '=', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown Symbol <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
             }
-
+            
             break;
 
         case FIRST_LT:
@@ -208,7 +208,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
                 token_to_return->token = TK_LT;
                 return token_to_return;
             }
-
+            
             break;
 
         case FIRST_GT:
@@ -221,28 +221,28 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
                 token_to_return->token = TK_GT;
                 return token_to_return;
             }
-
+            
             break;
 
         case UNDERSCORE:
             if ((currentChar >= 'A' && currentChar <= 'Z') || (currentChar >= 'a' && currentChar <= 'z')) {
                 state = UNDERSCORE_LETTER;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: lowercase/uppercase alphabet, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
             }
-
+            
             break;
-
+            
         case HASHTAG:
             if (currentChar >= 'a' && currentChar <= 'z') {
                 state = HASHTAG_LETTER;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: lowercase alphabet, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -269,6 +269,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
+                
                 token_to_return->token = TK_FIELDID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -280,7 +281,7 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
                 state = FIELD_ID;
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
-                B->currentPos -= (currentChar != -1);
+                B->currentPos -= (currentChar != -1);                
                 token_to_return->token = TK_FIELDID;
                 return return_with_lookup(lt, token_to_return, B->line);
             }
@@ -304,8 +305,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
 
         case SECOND_AND:
             if (currentChar != '&') {
-                fprintf(stderr, "Line %d\n\tExpected: '&', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -316,8 +317,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
 
         case SECOND_OR:
             if (currentChar != '@') {
-                fprintf(stderr, "Line %d\n\tExpected: '@', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -346,7 +347,14 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
-                token_to_return->token = TK_FUNID;
+                
+                if (token_to_return->lexemeLength > 30) {
+                    fprintf(stderr, "Line No %d: Error: Function Identifier is longer than the prescribed length of 30 characters.\n", B->line);
+                    token_to_return->token = ERROR;
+                } else {
+                    token_to_return->token = TK_FUNID;
+                }
+
                 return return_with_lookup(lt, token_to_return, B->line);
             }
 
@@ -372,7 +380,14 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
-                token_to_return->token = TK_ID;
+
+                if (token_to_return->lexemeLength > 20) {
+                    fprintf(stderr, "Line No %d: Error: Variable Identifier is longer than the prescribed length of 20 characters.\n", B->line);
+                    token_to_return->token = ERROR;
+                } else {
+                    token_to_return->token = TK_ID;
+                }
+
                 return return_with_lookup(lt, token_to_return, B->line);
             }
 
@@ -393,8 +408,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
 
         case ASSIGNOP:
             if (currentChar != '-') {
-                fprintf(stderr, "Line %d\n\tExpected: '-', Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown Symbol <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -409,7 +424,14 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
-                token_to_return->token = TK_FUNID;
+                
+                if (token_to_return->lexemeLength > 30) {
+                    fprintf(stderr, "Line No %d: Error: Function Identifier is longer than the prescribed length of 30 characters.\n", B->line);
+                    token_to_return->token = ERROR;
+                } else {
+                    token_to_return->token = TK_FUNID;
+                }
+
                 return return_with_lookup(lt, token_to_return, B->line);
             }
 
@@ -421,7 +443,14 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else {
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
                 B->currentPos -= (currentChar != -1);
-                token_to_return->token = TK_ID;
+
+                if (token_to_return->lexemeLength > 20) {
+                    fprintf(stderr, "Line No %d: Error: Variable Identifier is longer than the prescribed length of 20 characters.\n", B->line);
+                    token_to_return->token = ERROR;
+                } else {
+                    token_to_return->token = TK_ID;
+                }
+
                 return return_with_lookup(lt, token_to_return, B->line);
             }
 
@@ -431,8 +460,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             if (currentChar >= '0' && currentChar <= '9') {
                 state = SECOND_FLDIG;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -459,8 +488,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             } else if (currentChar >= '0' && currentChar <= '9') {
                 state = FL_EXP_COMPLETE;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: signed/unsigned exponent, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -472,8 +501,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
             if (currentChar >= '0' && currentChar <= '9') {
                 state = FL_EXP_COMPLETE;
             } else {
-                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;
@@ -483,8 +512,8 @@ TokenInfo getNextToken(TwinBuffer B, LookupTable lt) {
 
         case FL_EXP_COMPLETE:
             if (currentChar < '0' || currentChar > '9') {
-                fprintf(stderr, "Line %d\n\tExpected: a digit, Received: '%c'\n", B->line, currentChar);
                 (token_to_return->lexeme)[token_to_return->lexemeLength -= (currentChar != -1)] = '\0';
+                fprintf(stderr, "Line no: %d : Error: Unknown pattern <%.*s>\n", B->line, token_to_return->lexemeLength, token_to_return->lexeme);
                 B->currentPos -= (currentChar != -1);
                 token_to_return->token = ERROR;
                 return token_to_return;

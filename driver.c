@@ -77,17 +77,18 @@ int main(int argc, char *argv[]) {
             LookupTable lt = create_lookup_table();
 
             while ((token = getNextToken(buffer, lt)) != NULL) {
-                printf("Token type: %s\n", TOKEN_NAME_FROM_VALUE[token->token]);
+                if (token->token == ERROR) continue;
+                printf("Line no. %d\t", buffer->line);
 
                 if (token->token == TK_NUM) {
-                    printf("Lexeme: %d\n", token->lexemeI);
+                    printf("Lexeme %d", token->lexemeI);
                 } else if (token->token == TK_RNUM) {
-                    printf("Lexeme: %f\n", token->lexemeF);
+                    printf("Lexeme %f", token->lexemeF);
                 } else {
-                    printf("Lexeme: %.*s\n", token->lexemeLength, token->lexeme);
+                    printf("Lexeme %.*s", token->lexemeLength, token->lexeme);
                 }
 
-                printf("\n");
+                printf("\tToken %s\n", TOKEN_NAME_FROM_VALUE[token->token]);
             }
 
             break;

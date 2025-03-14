@@ -131,16 +131,39 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
                 token = getNextToken(buffer, lt);
                 currNode = stack[top];
             } else {
-                // ERROR
-                fprintf(stderr, "Stack top is a terminal %s, but it doesn't match the token stream terminal %s\n", TOKEN_NAME_FROM_VALUE[stack[top]->token], TOKEN_NAME_FROM_VALUE[token->token]);
+                fprintf(stderr, "Line %d\n\tExpected token: %s, Received token: %s\n", buffer->line, TOKEN_NAME_FROM_VALUE[stack[top]->token], TOKEN_NAME_FROM_VALUE[token->token]);
+
+                bool reachedEndOfStreamWhileRecovering = false;
+                while (stack[top]->token != token->token) {
+                    token = getNextToken(buffer, lt);
+
+                    if (token == NULL) {
+                        reachedEndOfStreamWhileRecovering = true;
+                        break;
+                    }
+                }
+
+                if (reachedEndOfStreamWhileRecovering) break;
             }
         } else {
             Rule tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
 
             if (tableEntry == NULL) {
-                // ERROR
-                fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, TOKEN_NAME_FROM_VALUE[token->token]);
-                break;
+                fprintf(stderr, "Line %d\n\tNo rule from %s to %s. Starting panic mode recovery\n", buffer->line, NONTERMINAL_NAME_FROM_VALUE[stack[top]->nonTerminal - NUM_TERMINALS], TOKEN_NAME_FROM_VALUE[token->token]);
+
+                bool reachedEndOfStreamWhileRecovering = false;
+                while (tableEntry == NULL) {
+                    token = getNextToken(buffer, lt);
+
+                    if (token == NULL) {
+                        reachedEndOfStreamWhileRecovering = true;
+                        break;
+                    }
+
+                    tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
+                }
+
+                if (reachedEndOfStreamWhileRecovering) break;
             }
 
             if (tableEntry->isEpsilon) {
@@ -179,7 +202,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     }
 
     if (top != 0) {
-        fprintf(stderr, "Token stream ended before all elements from stack got popped. Top = %d\n", top);
+        fprintf(stderr, "Unexpected end of file\n");
     }
 
     return tree;
