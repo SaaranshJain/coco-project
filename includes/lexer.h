@@ -4,7 +4,7 @@
 #include "lexerDef.h"
 
 TwinBuffer getStream(FILE *fp);
-TokenInfo getNextToken(TwinBuffer B, LookupTable lt); 
+TokenInfo getNextToken(TwinBuffer B, LookupTable lt);
 void removeComments(char *testcaseFile, char *cleanFile);
 
 #endif

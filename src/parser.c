@@ -6,18 +6,18 @@
 
 uint64_t *computeFirstAndFollowSets(FirstAndFollow *F, Grammar G) {
     for (int i = 0; i < NUM_NON_TERMINALS; ++i) {
-        F[i] = (FirstAndFollow) malloc(sizeof(struct firstAndFollow));
+        F[i] = (FirstAndFollow)malloc(sizeof(struct firstAndFollow));
         F[i]->firstSet = 0;
         F[i]->followSet = 0;
     }
-    
+
     uint64_t *memo = computeFirstSets(F, G);
     computeFollowSets(F, G);
     return memo;
 }
 
 ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
-    ParseTable T = (ParseTable) malloc(NUM_TERMINALS * NUM_NON_TERMINALS * sizeof(Rule));
+    ParseTable T = (ParseTable)malloc(NUM_TERMINALS * NUM_NON_TERMINALS * sizeof(Rule));
 
     for (int i = 0; i < NUM_TERMINALS * NUM_NON_TERMINALS; ++i) {
         T[i] = NULL;
@@ -36,7 +36,8 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
                     T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + j] = rule;
                 }
 
-                followSetOfThisNT >>= 1; j++;
+                followSetOfThisNT >>= 1;
+                j++;
             }
         }
 
@@ -48,7 +49,8 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
                 T[(rule->lhs - NUM_TERMINALS) * NUM_TERMINALS + j] = rule;
             }
 
-            firstOfThisRule >>= 1; j++;
+            firstOfThisRule >>= 1;
+            j++;
         }
     }
 
@@ -118,7 +120,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
             }
         } else {
             Rule tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
-            
+
             if (tableEntry == NULL) {
                 // ERROR
                 fprintf(stderr, "No rule from %d to %s\n", stack[top]->nonTerminal, ENUM_NAME_FROM_VALUE[token->token]);
@@ -163,7 +165,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     return tree;
 }
 
-void preorder(ParseTreeNode node, FILE* outfile) {
+void preorder(ParseTreeNode node, FILE *outfile) {
     if (node->isTerminal) {
         fprintf(outfile, "(%s, %s)\n", ENUM_NAME_FROM_VALUE[node->token], node->lexeme);
     } else {
@@ -176,7 +178,7 @@ void preorder(ParseTreeNode node, FILE* outfile) {
 }
 
 void printParseTree(ParseTree PT, char *outfile) {
-    FILE* of = fopen(outfile, "w");
+    FILE *of = fopen(outfile, "w");
     preorder(PT->root, of);
     fclose(of);
 }
