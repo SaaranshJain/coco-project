@@ -101,9 +101,12 @@ typedef struct firstAndFollow *FirstAndFollow;
 typedef Rule *ParseTable;
 
 struct parseTreeNode {
+    bool isTerminal;
     enum TOKEN_TYPE token;
     enum NON_TERMINAL nonTerminal;
     char *lexeme;
+    int lexemeI;
+    double lexemeF;
     struct parseTreeNode *parent;
     struct parseTreeNode **children;
     int numChildren;

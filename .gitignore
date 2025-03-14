@@ -11,5 +11,6 @@ compiler
 # MacOS
 .DS_Store
 
-# Temporary testing scripts
+# Testing and output
 includes/test.py
+trees/*

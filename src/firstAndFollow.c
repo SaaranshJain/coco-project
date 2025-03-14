@@ -49,7 +49,7 @@ uint64_t firstSetOfRule(int ruleind, Grammar G, uint64_t *memo) {
 uint64_t *computeFirstSets(FirstAndFollow *ff, Grammar G) {
     uint64_t *memo = (uint64_t *)calloc(G->numRules, sizeof(uint64_t));
 
-    for (int i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
+    for (enum NON_TERMINAL i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
         for (int j = 0; j < G->numRules; ++j) {
             if (G->rules[j]->lhs == i) {
                 ff[i - NUM_TERMINALS]->firstSet |= firstSetOfRule(j, G, memo);
@@ -110,7 +110,7 @@ uint64_t followSetOfNT(FirstAndFollow *ff, Grammar G, enum NON_TERMINAL nt) {
 }
 
 void computeFollowSets(FirstAndFollow *ff, Grammar G) {
-    for (int i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
+    for (enum NON_TERMINAL i = NUM_TERMINALS; i < NUM_TERMINALS + NUM_NON_TERMINALS; ++i) {
         followSetOfNT(ff, G, i);
         // printf("Follow set of %i = %lu\n", i, followSetOfNT(ff, G, i));
     }

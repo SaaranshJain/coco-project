@@ -57,23 +57,31 @@ ParseTable createParseTable(FirstAndFollow *F, Grammar G, uint64_t *memo) {
 
 ParseTreeNode newNTNode(enum NON_TERMINAL nt) {
     ParseTreeNode ret = (ParseTreeNode)malloc(sizeof(struct parseTreeNode));
-    ret->children = NULL;
-    ret->lexeme = NULL;
+    ret->isTerminal = false;
+    ret->token = TK_DOLLAR;
     ret->nonTerminal = nt;
+    ret->lexeme = NULL;
+    ret->lexemeI = 0;
+    ret->lexemeF = 0.0;
+
+    ret->children = NULL;
     ret->numChildren = 0;
     ret->parent = NULL;
-    ret->token = -1;
     return ret;
 }
 
-ParseTreeNode newTnode(enum TOKEN_TYPE tk, char *lexeme) {
+ParseTreeNode newTnode(enum TOKEN_TYPE tk, char *lexeme, int lexemeI, double lexemeF) {
     ParseTreeNode ret = (ParseTreeNode)malloc(sizeof(struct parseTreeNode));
-    ret->children = NULL;
+    ret->isTerminal = true;
+    ret->token = tk;
+    ret->nonTerminal = NT_PROGRAM;
     ret->lexeme = lexeme;
-    ret->nonTerminal = -1;
+    ret->lexemeI = lexemeI;
+    ret->lexemeF = lexemeF;
+
+    ret->children = NULL;
     ret->numChildren = 0;
     ret->parent = NULL;
-    ret->token = tk;
     return ret;
 }
 
@@ -85,7 +93,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
 
     // Stack creation
     ParseTreeNode *stack = (ParseTreeNode *)malloc(32 * sizeof(ParseTreeNode));
-    stack[0] = newTnode(TK_DOLLAR, "$");
+    stack[0] = newTnode(TK_DOLLAR, "$", 0, 0.0);
     stack[1] = newNTNode(G->startSymbol);
     int top = 1, stackCap = 32;
 
@@ -96,10 +104,11 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     TokenInfo token = getNextToken(buffer, lt);
 
     while (token != NULL) {
-        if (stack[top]->nonTerminal == -1) {
+        if (stack[top]->isTerminal) {
             if (stack[top]->token == token->token) {
                 currNode->lexeme = token->lexeme;
-                // ADD I AND F LEXEMES AS WELL
+                currNode->lexemeI = token->lexemeI;
+                currNode->lexemeF = token->lexemeF;
                 top--;
                 token = getNextToken(buffer, lt);
                 currNode = stack[top];
@@ -126,7 +135,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
 
             for (int i = 0; i < tableEntry->rhsLength; ++i) {
                 if (tableEntry->rhs[i]->isTerminal) {
-                    currNode->children[i] = newTnode(tableEntry->rhs[i]->symbol.terminal, NULL);
+                    currNode->children[i] = newTnode(tableEntry->rhs[i]->symbol.terminal, NULL, 0, 0.0);
                 } else {
                     currNode->children[i] = newNTNode(tableEntry->rhs[i]->symbol.nonTerminal);
                 }
@@ -155,7 +164,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
 }
 
 void preorder(ParseTreeNode node, FILE* outfile) {
-    if (node->nonTerminal == -1) {
+    if (node->isTerminal) {
         fprintf(outfile, "(%s, %s)\n", ENUM_NAME_FROM_VALUE[node->token], node->lexeme);
     } else {
         fprintf(outfile, "%d\n", node->nonTerminal);
