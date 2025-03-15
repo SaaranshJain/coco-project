@@ -169,7 +169,7 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
     LookupTable lt = create_lookup_table();
     TokenInfo token = getNextToken(buffer, lt);
 
-    while (token != NULL) {
+    while (token != NULL && top >= 0) {
         if (stack[top]->isTerminal) {
             if (stack[top]->token == token->token) {
                 currNode->lexeme = token->lexeme;
@@ -180,41 +180,48 @@ ParseTree parseInputSourceCode(char *testcaseFileName, ParseTable T, Grammar G) 
                 token = getNextToken(buffer, lt);
                 currNode = stack[top];
             } else {
-                fprintf(stderr, "Line %d\n\tExpected token: %s, Received token: %s\n", buffer->line, TOKEN_NAME_FROM_VALUE[stack[top]->token], TOKEN_NAME_FROM_VALUE[token->token]);
-
-                bool reachedEndOfStreamWhileRecovering = false;
-                while (stack[top]->token != token->token) {
-                    token = getNextToken(buffer, lt);
-
-                    if (token == NULL) {
-                        reachedEndOfStreamWhileRecovering = true;
+                if (token->token == ERROR) {
+                    if ((token = getNextToken(buffer, lt)) == NULL)
                         break;
-                    }
                 }
 
-                if (reachedEndOfStreamWhileRecovering)
-                    break;
+                fprintf(stderr, "Line %d\tError: The token %s for lexeme %s does not match with the expected token %s\n", buffer->line, TOKEN_NAME_FROM_VALUE[token->token], token->lexeme, TOKEN_NAME_FROM_VALUE[stack[top]->token]);
+                int prevLine = buffer->line;
+                while (token != NULL && buffer->line == prevLine) {
+                    token = getNextToken(buffer, lt);
+                }
+
+                while (top >= 0 && ((stack[top]->isTerminal && stack[top]->token != token->token) || (!stack[top]->isTerminal && T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token] == NULL))) {
+                    top--;
+                }
             }
         } else {
             Rule tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
 
             if (tableEntry == NULL) {
-                fprintf(stderr, "Line %d\n\tNo rule from %s to %s. Starting panic mode recovery\n", buffer->line, NONTERMINAL_NAME_FROM_VALUE[stack[top]->nonTerminal - NUM_TERMINALS], TOKEN_NAME_FROM_VALUE[token->token]);
-
-                bool reachedEndOfStreamWhileRecovering = false;
-                while (tableEntry == NULL) {
-                    token = getNextToken(buffer, lt);
-
-                    if (token == NULL) {
-                        reachedEndOfStreamWhileRecovering = true;
+                if (token->token == ERROR) {
+                    if ((token = getNextToken(buffer, lt)) == NULL)
                         break;
-                    }
-
-                    tableEntry = T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token];
                 }
 
-                if (reachedEndOfStreamWhileRecovering)
+                if (T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token] == NULL) {
+                    fprintf(stderr, "Line %d\tError: Invalid token %s encountered with value %s stack top %s\n", buffer->line, TOKEN_NAME_FROM_VALUE[token->token], token->lexeme, NONTERMINAL_NAME_FROM_VALUE[stack[top]->nonTerminal - NUM_TERMINALS]);
+                }
+
+                int prevLine = buffer->line;
+                while (token != NULL && buffer->line == prevLine) {
+                    token = getNextToken(buffer, lt);
+                }
+
+                while (top >= 0 && ((stack[top]->isTerminal && stack[top]->token != token->token) || (!stack[top]->isTerminal && T[(stack[top]->nonTerminal - NUM_TERMINALS) * NUM_TERMINALS + token->token] == NULL))) {
+                    top--;
+                }
+
+                if (top < 0) {
                     break;
+                }
+
+                continue;
             }
 
             if (tableEntry->isEpsilon) {
